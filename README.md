@@ -6,7 +6,12 @@ A collection of Claude Code plugins for power users.
 
 | Plugin | Description |
 |--------|-------------|
-| [say-summary](./plugins/say-summary/) | Speaks a short summary of Claude's response using macOS TTS |
+| [agent-council](./plugins/agent-council/) | Collect and synthesize opinions from multiple AI agents (Gemini, GPT, Codex) |
+| [youtube-digest](./plugins/youtube-digest/) | Summarize YouTube videos from transcript with insights and Korean translation |
+| [slack-noti](./plugins/slack-noti/) | Send Slack notifications to a channel |
+| [sms-send](./plugins/sms-send/) | Send iMessage/SMS via macOS Messages app |
+| [clarify](./plugins/clarify/) | Transform vague requirements into precise specifications through iterative questioning |
+| [say-summary](./plugins/say-summary/) | Speaks a short summary of Claude's response using macOS TTS (Korean/English) |
 
 ## Installation
 
