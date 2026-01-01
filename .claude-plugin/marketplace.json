@@ -1,22 +1,26 @@
 {
-  "name": "plugins-for-claude-natives",
-  "owner": {
-    "name": "Team Attention",
-    "url": "https://github.com/team-attention"
-  },
+  "name": "team-attention-plugins",
+  "description": "Claude Code plugins for power users by Team Attention",
   "plugins": [
     {
-      "name": "say-summary",
-      "source": "./plugins/say-summary",
-      "description": "Speaks a short summary of Claude's response using macOS TTS",
-      "version": "1.0.0"
+      "name": "agent-council",
+      "description": "Collect and synthesize opinions from multiple AI agents (Gemini, GPT, Codex)",
+      "path": "plugins/agent-council"
     },
     {
-      "name": "agent-council",
-      "source": "./plugins/agent-council",
-      "description": "Collect and synthesize opinions from multiple AI Agents",
-      "version": "1.0.0",
-      "skills": ["./plugins/agent-council/skills/agent-council"]
+      "name": "clarify",
+      "description": "Transform vague requirements into precise specifications through iterative questioning",
+      "path": "plugins/clarify"
+    },
+    {
+      "name": "interactive-review",
+      "description": "Interactive markdown review with web UI for visual plan/document approval",
+      "path": "plugins/interactive-review"
+    },
+    {
+      "name": "say-summary",
+      "description": "Speaks a short summary of Claude's response using macOS TTS (Korean/English)",
+      "path": "plugins/say-summary"
     }
   ]
 }
