@@ -6,8 +6,8 @@
   },
   "plugins": [
     {
-      "name": "summarize-last-message",
-      "source": "./plugins/summarize-last-message",
+      "name": "say-summary",
+      "source": "./plugins/say-summary",
       "description": "Speaks a short summary of Claude's response using macOS TTS",
       "version": "1.0.0"
     }

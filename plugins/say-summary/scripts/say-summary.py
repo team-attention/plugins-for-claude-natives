@@ -15,7 +15,7 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-LOG_FILE = Path("/tmp/summarize-last-message.log")
+LOG_FILE = Path("/tmp/say-summary.log")
 
 
 def log(message: str) -> None:

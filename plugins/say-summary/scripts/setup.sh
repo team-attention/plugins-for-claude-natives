@@ -1,10 +1,10 @@
 #!/bin/bash
-# Setup script for summarize-last-message plugin
+# Setup script for say-summary plugin
 # Installs required Python dependencies
 
 set -e
 
-echo "Installing summarize-last-message plugin dependencies..."
+echo "Installing say-summary plugin dependencies..."
 
 # Check if pip is available
 if ! command -v pip3 &> /dev/null; then

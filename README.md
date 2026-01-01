@@ -6,7 +6,7 @@ A collection of Claude Code plugins for power users.
 
 | Plugin | Description |
 |--------|-------------|
-| [summarize-last-message](./plugins/summarize-last-message/) | Speaks a short summary of Claude's response using macOS TTS |
+| [say-summary](./plugins/say-summary/) | Speaks a short summary of Claude's response using macOS TTS |
 
 ## Installation
 

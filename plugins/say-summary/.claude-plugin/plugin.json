@@ -1,5 +1,5 @@
 {
-  "name": "summarize-last-message",
+  "name": "say-summary",
   "version": "1.0.0",
   "description": "Speaks a short summary of Claude's response using macOS say command",
   "author": {

@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/summarize-last-message.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/say-summary.py",
             "timeout": 30
           }
         ]

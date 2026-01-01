@@ -1,4 +1,4 @@
-# summarize-last-message
+# say-summary
 
 A Claude Code plugin that speaks a short summary of Claude's response using macOS text-to-speech.
 
@@ -21,10 +21,10 @@ A Claude Code plugin that speaks a short summary of Claude's response using macO
 /plugin marketplace add team-attention/plugins-for-claude-natives
 
 # Install the plugin
-/plugin install summarize-last-message
+/plugin install say-summary
 
 # Run setup to install Python dependencies
-~/.claude/plugins/summarize-last-message/scripts/setup.sh
+~/.claude/plugins/say-summary/scripts/setup.sh
 ```
 
 Or manually install the dependency:
@@ -47,7 +47,7 @@ The plugin uses these defaults:
 
 ## Logs
 
-Logs are written to `/tmp/summarize-last-message.log` for debugging.
+Logs are written to `/tmp/say-summary.log` for debugging.
 
 ## License
 
