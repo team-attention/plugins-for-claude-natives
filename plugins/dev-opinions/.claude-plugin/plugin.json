@@ -1,0 +1,13 @@
+{
+  "name": "dev-opinions",
+  "version": "1.0.0",
+  "description": "Fetch developer opinions from Reddit, Hacker News, Dev.to, and Lobsters",
+  "author": {
+    "name": "Team Attention",
+    "url": "https://github.com/team-attention"
+  },
+  "repository": "https://github.com/team-attention/plugins-for-claude-natives",
+  "license": "MIT",
+  "keywords": ["claude-code", "plugin", "reddit", "hackernews", "dev-community"],
+  "skills": "./skills/dev-opinions"
+}
