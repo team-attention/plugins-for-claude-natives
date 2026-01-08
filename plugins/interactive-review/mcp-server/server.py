@@ -205,8 +205,8 @@ async def start_review_impl(content: str, title: str = "Review") -> dict[str, An
         if server:
             try:
                 server.shutdown()
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Error shutting down HTTP server: {e}", file=sys.stderr)
 
         # Cleanup temp directory
         try:
