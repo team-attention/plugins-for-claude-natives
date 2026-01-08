@@ -124,6 +124,7 @@ async def start_review_impl(content: str, title: str = "Review") -> dict[str, An
     review_dir = Path(tempfile.gettempdir()) / f"claude-review-{review_id}"
     review_dir.mkdir(parents=True, exist_ok=True)
 
+    server = None
     try:
         # Parse markdown
         blocks = parse_markdown(content)
@@ -170,9 +171,6 @@ async def start_review_impl(content: str, title: str = "Review") -> dict[str, An
             None, lambda: _result_event.wait(timeout)
         )
 
-        # Shutdown server
-        server.shutdown()
-
         if not result_received:
             return {
                 "status": "timeout",
@@ -203,7 +201,14 @@ async def start_review_impl(content: str, title: str = "Review") -> dict[str, An
         }
 
     finally:
-        # Cleanup
+        # Shutdown server
+        if server:
+            try:
+                server.shutdown()
+            except Exception:
+                pass
+
+        # Cleanup temp directory
         try:
             import shutil
             shutil.rmtree(review_dir, ignore_errors=True)
