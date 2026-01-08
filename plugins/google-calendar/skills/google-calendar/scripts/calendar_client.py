@@ -78,9 +78,10 @@ class CalendarClient:
                 client_secret=token_data.get("client_secret"),
                 scopes=self.SCOPES,
             )
-            # quota project 설정
-            quota_project = token_data.get("quota_project_id", "teamattention")
-            creds = creds.with_quota_project(quota_project)
+            # quota project 설정 (있을 때만)
+            quota_project = token_data.get("quota_project_id")
+            if quota_project:
+                creds = creds.with_quota_project(quota_project)
         else:
             # 일반 OAuth 토큰 형식
             creds = Credentials.from_authorized_user_info(token_data, self.SCOPES)
