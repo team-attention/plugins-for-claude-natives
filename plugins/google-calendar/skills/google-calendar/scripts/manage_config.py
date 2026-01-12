@@ -18,6 +18,9 @@ Usage:
 
     # 캘린더 설정 재구성 (interactive)
     uv run python manage_config.py --account personal --reconfigure
+
+    # 기본 캘린더 설정 (일정 생성 시 사용)
+    uv run python manage_config.py --account personal --set-primary "calendar_id"
 """
 
 import argparse
@@ -30,6 +33,7 @@ from calendar_client import (
     save_calendar_config,
     config_exists,
     get_all_accounts,
+    select_primary_calendar_interactive,
 )
 
 
@@ -112,12 +116,13 @@ def list_config(account_name: str, base_path: Path) -> None:
     for cal in config_calendars:
         status = "✅" if cal.get("enabled", True) else "❌"
         alias = cal.get("alias", cal["id"])
+        primary_marker = " ⭐" if cal.get("primary") else ""
 
         # stale 여부 확인
         if diff and any(d["id"] == cal["id"] for d in diff.deleted_calendars):
             print(f"  ⚠️  {alias} (Google에서 삭제됨)")
         else:
-            print(f"  {status} {alias}")
+            print(f"  {status} {alias}{primary_marker}")
 
     enabled_count = sum(1 for c in config_calendars if c.get("enabled", True))
     print(f"\n  총 {len(config_calendars)}개 캘린더 ({enabled_count}개 활성)")
@@ -132,6 +137,23 @@ def list_config(account_name: str, base_path: Path) -> None:
         for cal in diff.renamed_calendars:
             print(f"  📝 {cal['new_alias']} → 이름 변경됨 (이전: {cal['old_alias']})")
         print("\n  --sync 옵션으로 동기화하세요.")
+
+    # alias 중복 검사
+    aliases = [cal.get("alias", cal["id"]) for cal in config_calendars]
+    seen, dups = set(), set()
+    for a in aliases:
+        if a in seen:
+            dups.add(a)
+        seen.add(a)
+    if dups:
+        print(f"\n⚠️  중복된 alias: {', '.join(dups)}")
+
+    # primary가 없으면 경고 표시
+    has_primary = any(cal.get("primary") for cal in config_calendars)
+    if not has_primary:
+        print("\n⚠️  기본 캘린더가 설정되어 있지 않습니다.")
+        print(f"   일정 생성 시 캘린더를 지정해야 합니다.")
+        print(f"   --set-primary 옵션으로 기본 캘린더를 설정하세요.")
 
 
 def enable_calendar(account_name: str, calendar_id: str, base_path: Path) -> None:
@@ -243,6 +265,7 @@ def reconfigure(account_name: str, base_path: Path) -> None:
         print(f"  [{i:2}] {cal['summary']}{primary}  ({role})")
 
     selected = _select_calendars_interactive(calendars)
+    selected = select_primary_calendar_interactive(selected)
     _save_and_print_result(account_name, selected, base_path)
 
 
@@ -293,6 +316,7 @@ def sync_config(account_name: str, base_path: Path) -> None:
         print(f"  [{i:2}] {cal['summary']}{primary}  ({role}){new_marker}")
 
     selected = _select_calendars_interactive(google_calendars)
+    selected = select_primary_calendar_interactive(selected)
     _save_and_print_result(account_name, selected, base_path, action="동기화")
 
 
@@ -335,16 +359,82 @@ def remove_calendar(account_name: str, calendar_id: str, base_path: Path) -> Non
     config = load_calendar_config(account_name, base_path)
     calendars = config.get("calendars", [])
 
-    original_len = len(calendars)
-    calendars = [c for c in calendars if c["id"] != calendar_id and c.get("alias") != calendar_id]
+    # 삭제 대상 찾기
+    removed = None
+    for cal in calendars:
+        if cal["id"] == calendar_id or cal.get("alias") == calendar_id:
+            removed = cal
+            break
 
-    if len(calendars) == original_len:
+    if removed is None:
         print(f"❌ 캘린더를 찾을 수 없습니다: {calendar_id}")
         return
 
+    # Primary 캘린더 삭제 시 경고
+    was_primary = removed.get("primary", False)
+
+    calendars = [c for c in calendars if c["id"] != removed["id"]]
     config["calendars"] = calendars
     save_calendar_config(account_name, config, base_path)
-    print(f"✅ 캘린더 제거됨: {calendar_id}")
+
+    alias = removed.get("alias", removed["id"])
+    print(f"✅ 캘린더 제거됨: {alias}")
+
+    if was_primary:
+        print()
+        print("⚠️  기본 캘린더가 삭제되었습니다.")
+        print("   일정 생성 시 --calendar 옵션으로 캘린더를 지정하거나,")
+        print(f"   --set-primary 옵션으로 새 기본 캘린더를 설정하세요.")
+
+
+def set_primary_calendar(account_name: str, calendar_id: str, base_path: Path) -> None:
+    """기본 캘린더 설정 (일정 생성 시 사용).
+
+    Args:
+        account_name: 계정 식별자
+        calendar_id: 캘린더 ID 또는 alias
+        base_path: skill 루트 경로
+    """
+    config = load_calendar_config(account_name, base_path)
+    calendars = config.get("calendars", [])
+
+    if not calendars:
+        print(f"❌ 설정된 캘린더가 없습니다.")
+        print("   --reconfigure 옵션으로 캘린더를 먼저 설정하세요.")
+        return
+
+    # Google Calendar에서 권한 조회
+    google_roles = {}
+    try:
+        client = CalendarClient(account_name, base_path)
+        for gc in client.list_calendars():
+            google_roles[gc["id"]] = gc.get("access_role", "unknown")
+    except Exception:
+        pass  # 오프라인시 권한 검증 스킵
+
+    found = False
+    for cal in calendars:
+        if cal["id"] == calendar_id or cal.get("alias") == calendar_id:
+            # 권한 검증: reader/freeBusyReader면 경고
+            role = google_roles.get(cal["id"], "unknown")
+            if role in ("reader", "freeBusyReader"):
+                print(f"⚠️  '{cal.get('alias', cal['id'])}' 캘린더는 읽기 전용({role})입니다.")
+                print("   일정 생성이 실패할 수 있습니다.")
+
+            # 기존 primary 제거
+            for c in calendars:
+                c.pop("primary", None)
+            cal["primary"] = True
+            found = True
+            print(f"✅ '{cal.get('alias', cal['id'])}' 캘린더가 기본 캘린더로 설정되었습니다.")
+            break
+
+    if not found:
+        print(f"❌ 캘린더를 찾을 수 없습니다: {calendar_id}")
+        print("   --list 옵션으로 등록된 캘린더를 확인하세요.")
+        return
+
+    save_calendar_config(account_name, config, base_path)
 
 
 def main():
@@ -392,6 +482,11 @@ def main():
         metavar="CALENDAR_ID",
         help="캘린더 완전 제거",
     )
+    parser.add_argument(
+        "--set-primary",
+        metavar="CALENDAR_ID",
+        help="기본 캘린더 설정 (일정 생성 시 사용)",
+    )
 
     args = parser.parse_args()
     base_path = Path(__file__).parent.parent
@@ -422,12 +517,15 @@ def main():
         add_calendar(args.account, args.add, base_path)
     elif args.remove:
         remove_calendar(args.account, args.remove, base_path)
+    elif getattr(args, "set_primary", None):
+        set_primary_calendar(args.account, args.set_primary, base_path)
     else:
         parser.print_help()
         print()
         print("예시:")
         print(f"  uv run python manage_config.py --account {args.account} --list")
         print(f"  uv run python manage_config.py --account {args.account} --sync")
+        print(f"  uv run python manage_config.py --account {args.account} --set-primary \"캘린더 이름\"")
 
 
 if __name__ == "__main__":

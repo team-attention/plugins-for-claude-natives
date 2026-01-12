@@ -12,6 +12,7 @@ calendars:
   - id: primary
     alias: Main
     enabled: true
+    primary: true  # 일정 생성 시 기본 캘린더
   - id: abc123xyz@group.calendar.google.com
     alias: Work Tasks
     enabled: true
@@ -27,6 +28,7 @@ calendars:
 | `id` | Yes | Google Calendar ID |
 | `alias` | No | Display name (auto-synced from Google Calendar's summary) |
 | `enabled` | No | Whether to include in queries (defaults to true) |
+| `primary` | No | 일정 생성 시 기본 캘린더로 사용 (계정당 1개만 가능, ⭐ 마커로 표시) |
 
 > **Note**: `alias`는 Google Calendar의 이름(summary)과 자동 동기화됩니다. `--sync` 옵션으로 최신 상태를 유지할 수 있습니다.
 
@@ -173,6 +175,28 @@ $ uv run python scripts/manage_config.py --account personal --remove "Side Proje
 ✅ 캘린더 제거됨: Side Projects
 ```
 
+### 9. Set Primary Calendar
+
+일정 생성 시 기본으로 사용할 캘린더를 지정합니다.
+
+```bash
+$ uv run python scripts/manage_config.py --account personal --set-primary "Work Tasks"
+✅ 'Work Tasks' 캘린더가 기본 캘린더로 설정되었습니다.
+
+# --list로 확인하면 ⭐ 마커가 표시됨
+$ uv run python scripts/manage_config.py --account personal --list
+
+📋 'personal' 계정의 캘린더 설정:
+
+  ✅ user@gmail.com
+  ✅ Work Tasks ⭐
+  ✅ Side Projects
+
+  총 3개 캘린더 (3개 활성)
+```
+
+> **Note**: 기본 캘린더는 계정당 1개만 설정 가능합니다. 새로 설정하면 기존 primary가 자동으로 제거됩니다.
+
 ## Backward Compatibility
 
 설정 파일이 없는 경우:
@@ -198,10 +222,11 @@ $ uv run python scripts/fetch_events.py --account personal --days 7 --pretty
 ```yaml
 # accounts/personal.config.yaml
 calendars:
-  # Main calendar - always enabled
+  # Main calendar - always enabled, primary for event creation
   - id: primary
     alias: Main
     enabled: true
+    primary: true  # 일정 생성 시 이 캘린더 사용
 
   # Work-related calendar
   - id: abc123xyz@group.calendar.google.com

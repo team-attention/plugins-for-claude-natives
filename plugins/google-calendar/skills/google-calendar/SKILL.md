@@ -79,6 +79,9 @@ uv run python scripts/manage_config.py --account personal --reconfigure
 # 캘린더 추가/제거 (ID로 직접 지정)
 uv run python scripts/manage_config.py --account personal --add "calendar_id@group.calendar.google.com"
 uv run python scripts/manage_config.py --account personal --remove "calendar_id"
+
+# 기본 캘린더 설정
+uv run python scripts/manage_config.py --account personal --set-primary "캘린더 이름"
 ```
 
 ## 워크플로우
@@ -192,6 +195,19 @@ uv run python .claude/skills/google-calendar/scripts/manage_events.py create \
     --account personal
 ```
 
+### 특정 캘린더에 일정 생성 (alias 사용)
+
+```bash
+uv run python .claude/skills/google-calendar/scripts/manage_events.py create \
+    --summary "팀 일정" \
+    --start "2026-01-06T14:00:00" \
+    --end "2026-01-06T15:00:00" \
+    --account work \
+    --calendar "팀 캘린더"
+```
+
+> **Note**: `--calendar` 미지정 시 config의 primary 캘린더에 생성됩니다.
+
 ### 일정 수정
 
 ```bash
@@ -222,6 +238,7 @@ uv run python .claude/skills/google-calendar/scripts/manage_events.py delete \
 | `--attendees` | 참석자 이메일 (쉼표 구분) |
 | `--account` | 계정 (work, personal 등) |
 | `--adc` | gcloud ADC 사용 |
+| `--calendar` | 캘린더 ID 또는 alias (기본값: config의 primary 캘린더) |
 | `--timezone` | 타임존 (기본값: Asia/Seoul) |
 | `--json` | JSON 형식 출력 |
 

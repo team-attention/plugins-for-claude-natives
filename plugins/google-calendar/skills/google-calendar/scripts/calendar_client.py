@@ -10,6 +10,7 @@ Environment Variables:
 
 import json
 import os
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -620,8 +621,19 @@ def load_calendar_config(account_name: str, base_path: Optional[Path] = None) ->
     if not config_path.exists():
         return {"calendars": [{"id": "primary", "alias": "Primary", "enabled": True}]}
 
-    with open(config_path, encoding="utf-8") as f:
-        return yaml.safe_load(f) or {"calendars": []}
+    try:
+        with open(config_path, encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+            if config is None or not isinstance(config, dict):
+                print(f"⚠️  설정 파일이 손상되었습니다: {config_path}", file=sys.stderr)
+                print("   기본값을 사용합니다. --reconfigure로 재설정하세요.", file=sys.stderr)
+                return {"calendars": []}
+            return config
+    except yaml.YAMLError as e:
+        print(f"⚠️  설정 파일 파싱 오류: {config_path}", file=sys.stderr)
+        print(f"   {e}", file=sys.stderr)
+        print("   기본값을 사용합니다. --reconfigure로 재설정하세요.", file=sys.stderr)
+        return {"calendars": []}
 
 
 def save_calendar_config(
@@ -652,6 +664,97 @@ def config_exists(account_name: str, base_path: Optional[Path] = None) -> bool:
     base_path = base_path or Path(__file__).parent.parent
     config_path = base_path / "accounts" / f"{account_name}.config.yaml"
     return config_path.exists()
+
+
+def get_primary_calendar_id(account_name: str, base_path: Optional[Path] = None) -> Optional[str]:
+    """설정된 primary 캘린더 ID 반환.
+
+    Args:
+        account_name: 계정 식별자
+        base_path: skill 루트 경로
+
+    Returns:
+        primary로 설정된 캘린더 ID.
+        - config가 없으면 "primary" (Google 기본값, 하위 호환성)
+        - config가 있는데 primary가 없으면 None (설정 필요)
+    """
+    if not config_exists(account_name, base_path):
+        return "primary"  # 하위 호환성: config 없으면 Google default
+
+    config = load_calendar_config(account_name, base_path)
+    calendars = config.get("calendars", [])
+
+    # config가 있지만 캘린더가 없는 경우
+    if not calendars:
+        return "primary"
+
+    # primary가 설정된 캘린더 찾기
+    for cal in calendars:
+        if cal.get("primary"):
+            return cal["id"]
+
+    # config가 있고 캘린더도 있는데 primary가 없음 → 설정 필요
+    return None
+
+
+def resolve_calendar_id(
+    calendar_ref: str, account_name: str, base_path: Optional[Path] = None
+) -> str:
+    """캘린더 ID 또는 alias를 실제 calendar_id로 변환.
+
+    Args:
+        calendar_ref: 캘린더 ID 또는 alias
+        account_name: 계정명
+        base_path: skill 루트 경로
+
+    Returns:
+        실제 calendar_id (못 찾으면 원본 반환)
+    """
+    config = load_calendar_config(account_name, base_path)
+    for cal in config.get("calendars", []):
+        if cal["id"] == calendar_ref or cal.get("alias") == calendar_ref:
+            return cal["id"]
+    return calendar_ref  # Assume it's a valid calendar_id
+
+
+def select_primary_calendar_interactive(selected_calendars: list[dict]) -> list[dict]:
+    """선택된 캘린더 중 기본 캘린더 선택 (interactive).
+
+    Args:
+        selected_calendars: 선택된 캘린더 리스트 (각 항목은 id, alias 포함)
+
+    Returns:
+        primary가 설정된 캘린더 리스트
+    """
+    if not selected_calendars:
+        return selected_calendars
+
+    # 단일 캘린더면 자동으로 primary 설정
+    if len(selected_calendars) == 1:
+        selected_calendars[0]["primary"] = True
+        print(f"\n📌 '{selected_calendars[0]['alias']}' 캘린더가 기본 캘린더로 설정되었습니다.")
+        return selected_calendars
+
+    # 다중 캘린더면 사용자 선택
+    print("\n📌 일정 생성 시 기본으로 사용할 캘린더를 선택하세요")
+    for i, cal in enumerate(selected_calendars, 1):
+        print(f"  [{i}] {cal['alias']}")
+
+    selection = input("> ").strip()
+
+    try:
+        idx = int(selection) - 1
+        if 0 <= idx < len(selected_calendars):
+            selected_calendars[idx]["primary"] = True
+            print(f"\n✅ '{selected_calendars[idx]['alias']}' 캘린더가 기본 캘린더로 설정되었습니다.")
+        else:
+            selected_calendars[0]["primary"] = True
+            print(f"\n⚠️  잘못된 번호입니다. '{selected_calendars[0]['alias']}' 캘린더가 기본으로 설정되었습니다.")
+    except ValueError:
+        selected_calendars[0]["primary"] = True
+        print(f"\n⚠️  잘못된 입력입니다. '{selected_calendars[0]['alias']}' 캘린더가 기본으로 설정되었습니다.")
+
+    return selected_calendars
 
 
 def fetch_all_events(days: int = 7, base_path: Optional[Path] = None) -> dict:

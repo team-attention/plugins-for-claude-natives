@@ -15,10 +15,10 @@ from pathlib import Path
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-from calendar_client import CalendarClient, save_calendar_config
+from calendar_client import CalendarClient, save_calendar_config, select_primary_calendar_interactive
 
 
-SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
+SCOPES = ["https://www.googleapis.com/auth/calendar"]  # 읽기/쓰기 권한
 
 
 def select_calendars_interactive(client: CalendarClient) -> list[dict]:
@@ -121,6 +121,7 @@ def setup_auth(account_name: str, base_path: Path) -> None:
     try:
         client = CalendarClient(account_name, base_path)
         selected_calendars = select_calendars_interactive(client)
+        selected_calendars = select_primary_calendar_interactive(selected_calendars)
 
         if selected_calendars:
             config = {"calendars": selected_calendars}
