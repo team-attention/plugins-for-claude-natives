@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
+import yaml
 import google.auth
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -191,6 +192,34 @@ class CalendarClient:
                 break
 
         return calendars
+
+    def get_events_from_config(self, days: int = 7) -> list[dict]:
+        """설정 파일에 정의된 모든 enabled 캘린더에서 이벤트 조회.
+
+        Args:
+            days: 조회할 기간 (일)
+
+        Returns:
+            이벤트 목록 (시간순 정렬, calendar_alias 포함)
+        """
+        config = load_calendar_config(self.account_name, self.base_path)
+        all_events = []
+
+        for cal in config.get("calendars", []):
+            if not cal.get("enabled", True):
+                continue
+            try:
+                events = self.get_events(days=days, calendar_id=cal["id"])
+                for e in events:
+                    e["calendar_alias"] = cal.get("alias", cal["id"])
+                    e["calendar_id"] = cal["id"]
+                all_events.extend(events)
+            except Exception:
+                # Skip calendars that fail (e.g., deleted or no access)
+                pass
+
+        all_events.sort(key=lambda x: x["start"])
+        return all_events
 
     def create_event(
         self,
@@ -573,6 +602,56 @@ def get_all_accounts(base_path: Optional[Path] = None) -> list[str]:
         for f in accounts_dir.glob("*.json")
         if f.stem not in ("credentials",)
     ]
+
+
+def load_calendar_config(account_name: str, base_path: Optional[Path] = None) -> dict:
+    """캘린더 설정 파일 로드. 없으면 기본값(primary만) 반환.
+
+    Args:
+        account_name: 계정 식별자
+        base_path: skill 루트 경로
+
+    Returns:
+        설정 딕셔너리 {"calendars": [...]}
+    """
+    base_path = base_path or Path(__file__).parent.parent
+    config_path = base_path / "accounts" / f"{account_name}.config.yaml"
+
+    if not config_path.exists():
+        return {"calendars": [{"id": "primary", "alias": "Primary", "enabled": True}]}
+
+    with open(config_path, encoding="utf-8") as f:
+        return yaml.safe_load(f) or {"calendars": []}
+
+
+def save_calendar_config(
+    account_name: str, config: dict, base_path: Optional[Path] = None
+) -> Path:
+    """캘린더 설정 파일 저장.
+
+    Args:
+        account_name: 계정 식별자
+        config: 설정 딕셔너리 {"calendars": [...]}
+        base_path: skill 루트 경로
+
+    Returns:
+        저장된 파일 경로
+    """
+    base_path = base_path or Path(__file__).parent.parent
+    config_path = base_path / "accounts" / f"{account_name}.config.yaml"
+
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(config_path, "w", encoding="utf-8") as f:
+        yaml.dump(config, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+    return config_path
+
+
+def config_exists(account_name: str, base_path: Optional[Path] = None) -> bool:
+    """캘린더 설정 파일 존재 여부 확인."""
+    base_path = base_path or Path(__file__).parent.parent
+    config_path = base_path / "accounts" / f"{account_name}.config.yaml"
+    return config_path.exists()
 
 
 def fetch_all_events(days: int = 7, base_path: Optional[Path] = None) -> dict:
