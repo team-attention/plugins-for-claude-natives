@@ -9,11 +9,12 @@ Claude Code의 기능을 확장하고 싶은 파워 유저를 위한 플러그�
 - [상세 설명](#상세-설명)
   - [agent-council](#agent-council) - 여러 AI 모델의 의견 종합
   - [clarify](#clarify) - 모호한 요구사항을 명세로 변환
-  - [dev](#dev) - 개발자 커뮤니티 의견 수집
+  - [dev](#dev) - 커뮤니티 스캔 + 기술 의사결정
   - [interactive-review](#interactive-review) - 웹 UI로 계획 검토
   - [say-summary](#say-summary) - 응답을 음성으로 듣기
   - [youtube-digest](#youtube-digest) - YouTube 영상 요약 및 퀴즈
   - [google-calendar](#google-calendar) - 멀티 계정 캘린더 통합
+  - [session-wrap](#session-wrap) - 세션 마무리 + 히스토리 분석
 - [기여하기](#기여하기)
 - [라이선스](#라이선스)
 
@@ -37,11 +38,12 @@ Claude Code의 기능을 확장하고 싶은 파워 유저를 위한 플러그�
 |---------|------|------|
 | [agent-council](./plugins/agent-council/) | 여러 AI 에이전트(Gemini, GPT, Codex)의 의견을 수집하고 종합 | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_claude-code%EA%B0%80-codex-gemini-cli-%EA%B3%BC-%ED%9A%8C%EC%9D%98%ED%95%B4%EC%84%9C-%EA%B2%B0%EB%A1%A0%EC%9D%84-activity-7406083077258665984-L_fD) |
 | [clarify](./plugins/clarify/) | 반복적인 질문을 통해 모호한 요구사항을 정확한 명세로 변환 | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_%ED%81%B4%EB%A1%9C%EB%93%9C%EC%BD%94%EB%93%9C%EA%B0%80-%EA%B0%9D%EA%B4%80%EC%8B%9D%EC%9C%BC%EB%A1%9C-%EC%A7%88%EB%AC%B8%ED%95%98%EA%B2%8C-%ED%95%98%EB%8A%94-skills%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%B4%EB%B3%B4%EC%84%B8%EC%9A%94-clarify-activity-7413349697022570496-qLts) |
-| [dev](./plugins/dev/) | Reddit, Hacker News, Dev.to, Lobsters에서 개발자 의견 수집 | |
+| [dev](./plugins/dev/) | 커뮤니티 의견 스캔 + 기술 의사결정 분석 | |
 | [interactive-review](./plugins/interactive-review/) | 웹 UI를 통한 인터랙티브 마크다운 리뷰 | [LinkedIn](https://www.linkedin.com/posts/hoyeonleekr_claude-code%EA%B0%80-%EC%9E%91%EC%84%B1%ED%95%9C-%EA%B3%84%ED%9A%8D%EC%9D%B4%EB%82%98-%EA%B8%B4-%EB%AC%B8%EC%84%9C%EC%97%90-%EB%8C%80%ED%95%9C-%EC%96%B4%EB%96%BB%EA%B2%8C-%ED%94%BC%EB%93%9C%EB%B0%B1-%EC%A3%BC%EC%84%B8%EC%9A%94-activity-7412613598516051968-ujHp) |
 | [say-summary](./plugins/say-summary/) | Claude 응답을 macOS TTS로 요약해서 읽어줌 (한국어/영어) | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_claude-code%EC%9D%98-%EC%9D%91%EB%8B%B5%EC%9D%84-%EC%9A%94%EC%95%BD%ED%95%B4%EC%84%9C-%EC%9D%8C%EC%84%B1%EC%9C%BC%EB%A1%9C-%EB%93%A4%EC%9D%84-%EC%88%98-%EC%9E%88%EB%8A%94-hooks-activity-7412609821390249984-ekCd) |
 | [youtube-digest](./plugins/youtube-digest/) | YouTube 영상 요약, 인사이트, 한글 번역, 퀴즈 제공 | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_84%EB%B6%84%EC%A7%9C%EB%A6%AC-%EC%98%81%EC%96%B4-%ED%8C%9F%EC%BA%90%EC%8A%A4%ED%8A%B8%EB%A5%BC-5%EB%B6%84-%EB%A7%8C%EC%97%90-%ED%95%B5%EC%8B%AC-%ED%8C%8C%EC%95%85%ED%95%98%EA%B3%A0-%ED%80%B4%EC%A6%88%EA%B9%8C%EC%A7%80-%ED%92%80%EA%B3%A0-%EC%A7%81%EC%A0%91-activity-7414055598754848768-c0oy) |
 | [google-calendar](./plugins/google-calendar/) | 멀티 계정 Google Calendar 통합, 병렬 조회 및 충돌 감지 | |
+| [session-wrap](./plugins/session-wrap/) | 세션 마무리, 히스토리 분석, 세션 검증 툴킷 | |
 
 ---
 
@@ -97,24 +99,53 @@ User: "summon the council - TypeScript vs JavaScript 뭘 써야 할까?"
 
 ### dev
 
-**기술 주제에 대한 개발자 커뮤니티의 실제 의견을 수집합니다.**
+**개발자 워크플로우 도구: 커뮤니티 스캔과 기술 의사결정.**
 
-프레임워크, 도구, 관행에 대해 개발자들이 실제로 어떻게 생각하는지 알고 싶으세요? 이 플러그인은 Reddit, Hacker News, Dev.to, Lobsters를 병렬로 검색하여 다양한 관점을 수집합니다.
+개발자 리서치와 의사결정을 위한 두 가지 강력한 스킬을 제공합니다.
+
+#### 스킬
+
+**`/dev-scan`** - 개발자 커뮤니티 의견 스캔
+- Reddit (Gemini CLI 통해), Hacker News, Dev.to, Lobsters를 병렬 검색
+- 공통 의견, 논쟁점, 주목할 시각을 종합
+- 도구 도입 전 커뮤니티 분위기 파악에 유용
+
+**`/tech-decision`** - 깊이 있는 기술 의사결정 분석
+- 4개의 전문 에이전트가 병렬로 실행되는 다단계 워크플로우
+- 코드베이스 분석, 문서 리서치, 커뮤니티 의견, AI 전문가 관점 종합
+- 두괄식(결론 먼저) 보고서와 점수화된 비교 제공
 
 **트리거 문구:**
-- "...에 대한 개발자 반응"
-- "개발자들은 뭐라고 해?"
-- "커뮤니티 의견 모아줘"
+- "개발자 반응...", "개발자들 뭐라고 해?"
+- "A vs B", "어떤 라이브러리 써야 해?", "기술 의사결정"
 
-**출력 내용:**
-- **Consensus (공통 의견)** - 여러 소스에서 언급된 포인트
-- **Controversy (논쟁점)** - 의견이 갈리는 부분
-- **Notable perspectives (주목할 시각)** - 경험 많은 개발자들의 독특한 인사이트
-- **Platform temperature (플랫폼별 온도)** - 커뮤니티별 전반적인 분위기
+**tech-decision 동작 방식:**
+
+```
+Phase 1: 병렬 정보 수집
+┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
+│ codebase-       │ docs-           │ dev-scan        │ agent-council   │
+│ explorer        │ researcher      │ (커뮤니티)       │ (AI 전문가)      │
+└────────┬────────┴────────┬────────┴────────┬────────┴────────┬────────┘
+         └─────────────────┴─────────────────┴─────────────────┘
+                                    │
+Phase 2: 분석 및 종합               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        tradeoff-analyzer                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       decision-synthesizer                               │
+│                       (두괄식: 결론 먼저)                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 ```bash
 # 예시
-User: "React 19에 대한 개발자들 반응 어때?"
+User: "React vs Vue 뭐가 나을까?"
+User: "상태관리 라이브러리 뭐 쓸지 고민이야"
+User: "모놀리스 vs 마이크로서비스 어떻게 해야 할까?"
 ```
 
 ---
@@ -206,6 +237,57 @@ YouTube URL을 입력하면 완전한 분석을 받을 수 있습니다: 요약,
 uv run python scripts/setup_auth.py --account work
 uv run python scripts/setup_auth.py --account personal
 ```
+
+---
+
+### session-wrap
+
+**종합 세션 마무리 및 분석 툴킷.**
+
+코딩 세션을 철저히 분석하고 마무리하며, 세션 히스토리에서 인사이트를 추출합니다.
+
+#### 스킬
+
+**`/wrap`** - 세션 마무리 워크플로우
+- 종합 세션 분석을 위한 2단계 멀티 에이전트 파이프라인
+- 문서화 필요사항, 자동화 기회, 배운 점, 후속 작업 캡처
+- `/wrap [커밋 메시지]`로 빠른 커밋
+
+**`/history-insight`** - 세션 히스토리 분석
+- Claude Code 세션 히스토리에서 패턴과 인사이트 분석
+- 현재 프로젝트 또는 전체 세션 검색
+- 주제, 결정사항, 반복 패턴 추출
+
+**`/session-analyzer`** - 사후 세션 검증
+- SKILL.md 명세 대비 세션 행동 검증
+- 에이전트, 훅, 도구가 올바르게 실행되었는지 확인
+- 상세한 준수 보고서 생성
+
+**/wrap 동작 방식 (2단계 파이프라인):**
+
+```
+Phase 1: 분석 (병렬)
+┌──────────────┬──────────────┬──────────────┬──────────────┐
+│ doc-updater  │ automation-  │ learning-    │ followup-    │
+│              │ scout        │ extractor    │ suggester    │
+└──────┬───────┴──────┬───────┴──────┬───────┴──────┬───────┘
+       └──────────────┴──────────────┴──────────────┘
+                            │
+Phase 2: 검증               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    duplicate-checker                         │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+                    사용자 선택
+```
+
+**장점:**
+- 중요한 발견을 문서화하는 것을 잊지 않음
+- 자동화할 가치가 있는 패턴 식별
+- 미래 세션을 위한 명확한 인수인계점 생성
+- 과거 세션의 반복 패턴 분석
+- 스킬 구현이 명세대로 동작하는지 검증
 
 ---
 

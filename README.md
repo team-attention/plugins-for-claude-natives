@@ -9,12 +9,12 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
 - [Plugin Details](#plugin-details)
   - [agent-council](#agent-council) - Get consensus from multiple AI models
   - [clarify](#clarify) - Transform vague requirements into specs
-  - [dev](#dev) - Scan developer communities for opinions
+  - [dev](#dev) - Community scanning + technical decision-making
   - [interactive-review](#interactive-review) - Review plans with a web UI
   - [say-summary](#say-summary) - Hear responses via text-to-speech
   - [youtube-digest](#youtube-digest) - Summarize and quiz on YouTube videos
   - [google-calendar](#google-calendar) - Multi-account calendar integration
-  - [session-wrap](#session-wrap) - Multi-agent session wrap-up workflow
+  - [session-wrap](#session-wrap) - Session wrap-up + history analysis toolkit
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -38,11 +38,12 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
 |--------|-------------|
 | [agent-council](./plugins/agent-council/) | Collect and synthesize opinions from multiple AI agents (Gemini, GPT, Codex) |
 | [clarify](./plugins/clarify/) | Transform vague requirements into precise specifications through iterative questioning |
+| [dev](./plugins/dev/) | Developer workflow: community opinion scanning and technical decision analysis |
 | [interactive-review](./plugins/interactive-review/) | Interactive markdown review with web UI for visual plan/document approval |
 | [say-summary](./plugins/say-summary/) | Speaks a short summary of Claude's response using macOS TTS (Korean/English) |
 | [youtube-digest](./plugins/youtube-digest/) | Summarize YouTube videos with transcript, insights, Korean translation, and quizzes |
 | [google-calendar](./plugins/google-calendar/) | Multi-account Google Calendar integration with parallel querying and conflict detection |
-| [session-wrap](./plugins/session-wrap/) | Session wrap-up workflow with multi-agent analysis for documentation, automation, learning, and follow-up |
+| [session-wrap](./plugins/session-wrap/) | Session wrap-up, history analysis, and session validation toolkit |
 
 ## Plugin Details
 
@@ -100,24 +101,53 @@ Before writing code based on ambiguous instructions, this plugin conducts a stru
 
 ### dev
 
-**Scan developer communities for real opinions on any tech topic.**
+**Developer workflow tools: community scanning and technical decision-making.**
 
-Want to know what developers actually think about a framework, tool, or practice? This plugin searches Reddit, Hacker News, Dev.to, and Lobsters in parallel to gather diverse perspectives.
+This plugin provides two powerful skills for developer research and decision-making.
+
+#### Skills
+
+**`/dev-scan`** - Scan developer communities for real opinions
+- Searches Reddit (via Gemini CLI), Hacker News, Dev.to, and Lobsters in parallel
+- Synthesizes consensus, controversies, and notable perspectives
+- Great for understanding community sentiment before adopting a tool
+
+**`/tech-decision`** - Deep technical decision analysis
+- Multi-phase workflow with 4 specialized agents running in parallel
+- Combines codebase analysis, docs research, community opinions, and AI perspectives
+- Produces executive-summary-first reports with scored comparisons
 
 **Trigger phrases:**
-- "developer reactions to..."
-- "what do devs think about..."
-- "community opinions on..."
+- "developer reactions to...", "what do devs think about..."
+- "A vs B", "which library should I use", "기술 의사결정"
 
-**Output includes:**
-- **Consensus** - Points mentioned across multiple sources
-- **Controversy** - Where opinions diverge
-- **Notable perspectives** - Unique insights from experienced devs
-- **Platform temperature** - Overall sentiment by community
+**How tech-decision works:**
+
+```
+Phase 1: Parallel Information Gathering
+┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
+│ codebase-       │ docs-           │ dev-scan        │ agent-council   │
+│ explorer        │ researcher      │ (community)     │ (AI experts)    │
+└────────┬────────┴────────┬────────┴────────┬────────┴────────┬────────┘
+         └─────────────────┴─────────────────┴─────────────────┘
+                                    │
+Phase 2: Analysis & Synthesis       ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        tradeoff-analyzer                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       decision-synthesizer                               │
+│                    (Executive Summary First)                             │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 ```bash
-# Example
-User: "What do developers think about React 19?"
+# Examples
+User: "React vs Vue for my new project?"
+User: "Which state management library should I use?"
+User: "Monolith vs microservices for our scale?"
 ```
 
 ---
@@ -220,32 +250,52 @@ uv run python scripts/setup_auth.py --account personal
 
 ### session-wrap
 
-**Comprehensive session wrap-up with multi-agent analysis.**
+**Comprehensive session wrap-up and analysis toolkit.**
 
-End your coding sessions with a thorough analysis that captures documentation needs, automation opportunities, learnings, and follow-up tasks.
+End your coding sessions with thorough analysis, and dive deep into session history for insights.
 
-**Trigger phrases:**
-- `/wrap`
-- `/wrap [commit message]` (quick commit)
+#### Skills
 
-**How it works (2-Phase Pipeline):**
+**`/wrap`** - Session wrap-up workflow
+- 2-phase multi-agent pipeline for comprehensive session analysis
+- Captures documentation needs, automation opportunities, learnings, and follow-ups
+- `/wrap [commit message]` for quick commits
 
-1. **Phase 1 (Parallel)** - 4 specialized agents analyze simultaneously:
-   - `doc-updater`: Documentation gaps (CLAUDE.md, context.md)
-   - `automation-scout`: Automation opportunities (skill/command/agent)
-   - `learning-extractor`: TIL-format learnings
-   - `followup-suggester`: Prioritized follow-up tasks
+**`/history-insight`** - Session history analysis
+- Analyze Claude Code session history for patterns and insights
+- Search current project or all sessions
+- Extract themes, decisions, and recurring topics
 
-2. **Phase 2 (Sequential)** - Validation:
-   - `duplicate-checker`: Validates proposals against existing content
+**`/session-analyzer`** - Post-hoc session validation
+- Validate session behavior against SKILL.md specifications
+- Check if agents, hooks, and tools executed correctly
+- Generate detailed compliance reports
 
-3. **User Selection** - Choose which actions to execute
+**How /wrap works (2-Phase Pipeline):**
+
+```
+Phase 1: Analysis (Parallel)
+┌──────────────┬──────────────┬──────────────┬──────────────┐
+│ doc-updater  │ automation-  │ learning-    │ followup-    │
+│              │ scout        │ extractor    │ suggester    │
+└──────┬───────┴──────┬───────┴──────┬───────┴──────┬───────┘
+       └──────────────┴──────────────┴──────────────┘
+                            │
+Phase 2: Validation         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    duplicate-checker                         │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+                    User Selection
+```
 
 **Benefits:**
 - Never forget to document important discoveries
 - Identify patterns worth automating
 - Create clear handoff points for future sessions
-- Build organizational knowledge over time
+- Analyze past sessions for recurring patterns
+- Validate skill implementations against specifications
 
 ---
 

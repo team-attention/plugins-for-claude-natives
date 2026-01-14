@@ -8,5 +8,5 @@
   },
   "repository": "https://github.com/team-attention/plugins-for-claude-natives",
   "license": "MIT",
-  "keywords": ["session", "wrap-up", "documentation", "automation", "multi-agent"]
+  "keywords": ["session", "wrap-up", "documentation", "automation", "multi-agent", "history-insight", "session-analyzer"]
 }

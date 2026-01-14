@@ -84,18 +84,22 @@ Phase 2: Validation (Sequential)
 | `followup-suggester` | sonnet | Suggest prioritized follow-up tasks |
 | `duplicate-checker` | haiku | Validate proposals for duplicates |
 
-## Skill
+## Skills
 
-The `session-wrap` skill provides:
-- Session wrap-up best practices
-- Multi-agent orchestration patterns
-- 2-Phase pipeline design guidance
+### session-wrap
+Session wrap-up best practices, multi-agent orchestration patterns, 2-phase pipeline design guidance.
 
-Trigger phrases:
-- "session wrap-up"
-- "wrap best practices"
-- "multi-agent orchestration"
-- "2-phase pipeline"
+**Trigger phrases:** "session wrap-up", "wrap best practices", "multi-agent orchestration", "2-phase pipeline"
+
+### history-insight
+Claude Code 세션 히스토리를 분석하고 인사이트를 추출합니다.
+
+**Trigger phrases:** "capture session", "save session history", "what we discussed", "today's work", "session history"
+
+### session-analyzer
+Post-hoc analysis tool for validating Claude Code session behavior against SKILL.md specifications.
+
+**Trigger phrases:** "analyze session", "세션 분석", "evaluate skill execution", "check session logs"
 
 ## Directory Structure
 
@@ -112,10 +116,25 @@ session-wrap/
 │   ├── followup-suggester.md # Task prioritization
 │   └── duplicate-checker.md  # Validation
 ├── skills/
-│   └── session-wrap/
-│       ├── SKILL.md          # Best practices guide
+│   ├── session-wrap/
+│   │   ├── SKILL.md          # Best practices guide
+│   │   └── references/
+│   │       └── multi-agent-patterns.md
+│   ├── history-insight/
+│   │   ├── SKILL.md          # Session history analysis
+│   │   ├── scripts/
+│   │   │   └── extract-session.sh
+│   │   └── references/
+│   │       └── session-file-format.md
+│   └── session-analyzer/
+│       ├── SKILL.md          # Post-hoc session validation
+│       ├── scripts/
+│       │   ├── extract-hook-events.sh
+│       │   ├── extract-subagent-calls.sh
+│       │   └── find-session-files.sh
 │       └── references/
-│           └── multi-agent-patterns.md
+│           ├── analysis-patterns.md
+│           └── common-issues.md
 └── README.md
 ```
 
