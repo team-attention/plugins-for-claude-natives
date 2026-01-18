@@ -14,6 +14,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
   - [say-summary](#say-summary) - Hear responses via text-to-speech
   - [youtube-digest](#youtube-digest) - Summarize and quiz on YouTube videos
   - [google-calendar](#google-calendar) - Multi-account calendar integration
+  - [kakaotalk](#kakaotalk) - Send/read KakaoTalk messages on macOS
   - [session-wrap](#session-wrap) - Session wrap-up + history analysis toolkit
 - [Contributing](#contributing)
 - [License](#license)
@@ -43,6 +44,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
 | [say-summary](./plugins/say-summary/) | Speaks a short summary of Claude's response using macOS TTS (Korean/English) |
 | [youtube-digest](./plugins/youtube-digest/) | Summarize YouTube videos with transcript, insights, Korean translation, and quizzes |
 | [google-calendar](./plugins/google-calendar/) | Multi-account Google Calendar integration with parallel querying and conflict detection |
+| [kakaotalk](./plugins/kakaotalk/) | Send and read KakaoTalk messages on macOS using Accessibility API |
 | [session-wrap](./plugins/session-wrap/) | Session wrap-up, history analysis, and session validation toolkit |
 
 ## Plugin Details
@@ -244,6 +246,37 @@ Query, create, update, and delete events across multiple Google accounts (work, 
 # One-time setup per account
 uv run python scripts/setup_auth.py --account work
 uv run python scripts/setup_auth.py --account personal
+```
+
+---
+
+### kakaotalk
+
+**Send and read KakaoTalk messages from Claude Code on macOS.**
+
+Uses macOS Accessibility API to control the KakaoTalk app. Send messages or read chat history using natural language.
+
+**Trigger phrases:**
+- "Send '밥 먹었어?' to 구봉"
+- "Show chat history with 구봉"
+- "Send a KakaoTalk message"
+- "List chat rooms"
+
+**Features:**
+- Natural language message sending
+- Chat history retrieval
+- Chat room listing
+- Full Korean language support
+
+**Requirements:**
+- macOS only
+- KakaoTalk app must be running
+- Accessibility permission required
+
+```bash
+# Examples
+/kakao Send 밥 먹었어? to 구봉
+/kakao Show chat history with 구봉
 ```
 
 ---

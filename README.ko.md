@@ -14,6 +14,7 @@ Claude Code의 기능을 확장하고 싶은 파워 유저를 위한 플러그�
   - [say-summary](#say-summary) - 응답을 음성으로 듣기
   - [youtube-digest](#youtube-digest) - YouTube 영상 요약 및 퀴즈
   - [google-calendar](#google-calendar) - 멀티 계정 캘린더 통합
+  - [kakaotalk](#kakaotalk) - macOS 카카오톡 메시지 발송/읽기
   - [session-wrap](#session-wrap) - 세션 마무리 + 히스토리 분석
 - [기여하기](#기여하기)
 - [라이선스](#라이선스)
@@ -43,6 +44,7 @@ Claude Code의 기능을 확장하고 싶은 파워 유저를 위한 플러그�
 | [say-summary](./plugins/say-summary/) | Claude 응답을 macOS TTS로 요약해서 읽어줌 (한국어/영어) | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_claude-code%EC%9D%98-%EC%9D%91%EB%8B%B5%EC%9D%84-%EC%9A%94%EC%95%BD%ED%95%B4%EC%84%9C-%EC%9D%8C%EC%84%B1%EC%9C%BC%EB%A1%9C-%EB%93%A4%EC%9D%84-%EC%88%98-%EC%9E%88%EB%8A%94-hooks-activity-7412609821390249984-ekCd) |
 | [youtube-digest](./plugins/youtube-digest/) | YouTube 영상 요약, 인사이트, 한글 번역, 퀴즈 제공 | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_84%EB%B6%84%EC%A7%9C%EB%A6%AC-%EC%98%81%EC%96%B4-%ED%8C%9F%EC%BA%90%EC%8A%A4%ED%8A%B8%EB%A5%BC-5%EB%B6%84-%EB%A7%8C%EC%97%90-%ED%95%B5%EC%8B%AC-%ED%8C%8C%EC%95%85%ED%95%98%EA%B3%A0-%ED%80%B4%EC%A6%88%EA%B9%8C%EC%A7%80-%ED%92%80%EA%B3%A0-%EC%A7%81%EC%A0%91-activity-7414055598754848768-c0oy) |
 | [google-calendar](./plugins/google-calendar/) | 멀티 계정 Google Calendar 통합, 병렬 조회 및 충돌 감지 | |
+| [kakaotalk](./plugins/kakaotalk/) | macOS 카카오톡 메시지 발송 및 읽기 (Accessibility API) | |
 | [session-wrap](./plugins/session-wrap/) | 세션 마무리, 히스토리 분석, 세션 검증 툴킷 | |
 
 ---
@@ -236,6 +238,37 @@ YouTube URL을 입력하면 완전한 분석을 받을 수 있습니다: 요약,
 # 계정별 최초 1회 설정
 uv run python scripts/setup_auth.py --account work
 uv run python scripts/setup_auth.py --account personal
+```
+
+---
+
+### kakaotalk
+
+**macOS에서 카카오톡 메시지를 발송하고 읽습니다.**
+
+Accessibility API를 사용하여 카카오톡 앱을 제어합니다. 자연어로 메시지를 보내거나 대화 내역을 확인할 수 있습니다.
+
+**트리거 문구:**
+- "구봉에게 밥 먹었어? 전해줘"
+- "구봉이랑 대화 내역 보여줘"
+- "카톡 보내줘"
+- "채팅방 목록"
+
+**기능:**
+- 자연어 메시지 발송
+- 채팅방 대화 내역 조회
+- 채팅방 목록 확인
+- 한글 메시지 완벽 지원
+
+**요구사항:**
+- macOS 전용
+- 카카오톡 앱 실행 중
+- Accessibility 권한 필요
+
+```bash
+# 예시
+/kakao 구봉에게 밥 먹었어? 전해줘
+/kakao 구봉이랑 대화 내역 보여줘
 ```
 
 ---

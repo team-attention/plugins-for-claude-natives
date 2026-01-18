@@ -1,0 +1,12 @@
+{
+  "name": "kakaotalk",
+  "version": "1.0.0",
+  "description": "Send and read KakaoTalk messages on macOS using Accessibility API",
+  "author": {
+    "name": "Team Attention",
+    "url": "https://github.com/team-attention"
+  },
+  "repository": "https://github.com/team-attention/plugins-for-claude-natives",
+  "license": "MIT",
+  "keywords": ["kakaotalk", "messaging", "macos", "accessibility"]
+}
