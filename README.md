@@ -259,26 +259,26 @@ uv run python scripts/setup_auth.py --account personal
 Uses macOS Accessibility API to control the KakaoTalk app. Send messages or read chat history using natural language.
 
 **Trigger phrases:**
-- "Send '밥 먹었어?' to 구봉"
-- "Show chat history with 구봉"
-- "Send a KakaoTalk message"
-- "List chat rooms"
+- "카톡 보내줘", "카카오톡 메시지"
+- "~에게 메시지 보내줘"
+- "채팅 읽어줘"
+- "KakaoTalk message"
 
 **Features:**
-- Natural language message sending
+- Natural language message sending (with confirmation before send)
 - Chat history retrieval
 - Chat room listing
-- Full Korean language support
+- Auto-signature "sent with claude code"
 
 **Requirements:**
 - macOS only
 - KakaoTalk app must be running
 - Accessibility permission required
 
-```bash
-# Examples
-/kakao Send 밥 먹었어? to 구봉
-/kakao Show chat history with 구봉
+```
+# Examples (natural language)
+"구봉한테 밥 먹었어? 보내줘"
+"구봉이랑 대화 내역 보여줘"
 ```
 
 ---
