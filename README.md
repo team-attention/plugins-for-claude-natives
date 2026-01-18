@@ -252,6 +252,8 @@ uv run python scripts/setup_auth.py --account personal
 
 ### kakaotalk
 
+![Demo](./assets/kakaotalk.gif)
+
 **Send and read KakaoTalk messages from Claude Code on macOS.**
 
 Uses macOS Accessibility API to control the KakaoTalk app. Send messages or read chat history using natural language.

@@ -244,6 +244,8 @@ uv run python scripts/setup_auth.py --account personal
 
 ### kakaotalk
 
+![Demo](./assets/kakaotalk.gif)
+
 **macOS에서 카카오톡 메시지를 발송하고 읽습니다.**
 
 Accessibility API를 사용하여 카카오톡 앱을 제어합니다. 자연어로 메시지를 보내거나 대화 내역을 확인할 수 있습니다.
