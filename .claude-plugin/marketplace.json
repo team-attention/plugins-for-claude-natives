@@ -45,6 +45,11 @@
       "name": "dev",
       "description": "Developer workflow tools: community scanning, technical decision-making",
       "source": "./plugins/dev"
+    },
+    {
+      "name": "kakaotalk",
+      "description": "Send and read KakaoTalk messages on macOS using Accessibility API",
+      "source": "./plugins/kakaotalk"
     }
   ]
 }
