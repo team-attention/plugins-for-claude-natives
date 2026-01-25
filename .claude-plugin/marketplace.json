@@ -50,6 +50,11 @@
       "name": "kakaotalk",
       "description": "Send and read KakaoTalk messages on macOS using Accessibility API",
       "source": "./plugins/kakaotalk"
+    },
+    {
+      "name": "doubt",
+      "description": "Force Claude to re-validate when you have doubts (!doubt)",
+      "source": "./plugins/doubt"
     }
   ]
 }

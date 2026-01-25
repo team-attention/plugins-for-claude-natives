@@ -10,6 +10,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
   - [agent-council](#agent-council) - Get consensus from multiple AI models
   - [clarify](#clarify) - Transform vague requirements into specs
   - [dev](#dev) - Community scanning + technical decision-making
+  - [doubt](#doubt) - Force Claude to re-validate responses
   - [interactive-review](#interactive-review) - Review plans with a web UI
   - [say-summary](#say-summary) - Hear responses via text-to-speech
   - [youtube-digest](#youtube-digest) - Summarize and quiz on YouTube videos
@@ -40,6 +41,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
 | [agent-council](./plugins/agent-council/) | Collect and synthesize opinions from multiple AI agents (Gemini, GPT, Codex) |
 | [clarify](./plugins/clarify/) | Transform vague requirements into precise specifications through iterative questioning |
 | [dev](./plugins/dev/) | Developer workflow: community opinion scanning and technical decision analysis |
+| [doubt](./plugins/doubt/) | Force Claude to re-validate its response when `!rv` is in your prompt |
 | [interactive-review](./plugins/interactive-review/) | Interactive markdown review with web UI for visual plan/document approval |
 | [say-summary](./plugins/say-summary/) | Speaks a short summary of Claude's response using macOS TTS (Korean/English) |
 | [youtube-digest](./plugins/youtube-digest/) | Summarize YouTube videos with transcript, insights, Korean translation, and quizzes |
@@ -150,6 +152,32 @@ Phase 2: Analysis & Synthesis       ▼
 User: "React vs Vue for my new project?"
 User: "Which state management library should I use?"
 User: "Monolith vs microservices for our scale?"
+```
+
+---
+
+### doubt
+
+**Force Claude to double-check its response before delivering.**
+
+When you include `!rv` anywhere in your prompt, Claude will pause before responding, re-validate its answer against potential errors, and only then deliver the response. Perfect for critical decisions or when you want extra confidence.
+
+**Trigger:**
+- Include `!rv` anywhere in your prompt
+
+**How it works:**
+1. `UserPromptSubmit` hook detects `!rv` keyword and sets a flag
+2. `Stop` hook intercepts Claude's response before delivery
+3. Claude re-validates the response for errors, hallucinations, or questionable claims
+4. Only after verification does Claude deliver the final answer
+
+**Why `!rv` instead of `!doubt`?**
+The word "doubt" affects Claude's behavior - it starts doubting from the beginning. `!rv` (re-validate) is neutral.
+
+```bash
+# Example
+User: "What's the time complexity of binary search? !rv"
+# Claude will verify its answer before responding
 ```
 
 ---

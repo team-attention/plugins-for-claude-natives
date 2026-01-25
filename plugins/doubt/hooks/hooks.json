@@ -1,0 +1,27 @@
+{
+  "description": "Doubt mode - Type !doubt to force Claude re-validation",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/doubt-detector.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/doubt-validator.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
