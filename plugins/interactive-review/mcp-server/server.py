@@ -15,6 +15,7 @@ Provides the start_review tool that:
 """
 
 import asyncio
+import io
 import json
 import os
 import signal
@@ -24,6 +25,11 @@ import tempfile
 import threading
 import uuid
 import webbrowser
+
+# Windows stdout UTF-8 encoding fix
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 from dataclasses import asdict
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
@@ -102,13 +108,14 @@ def make_handler(review_dir: str):
     return handler
 
 
-async def start_review_impl(content: str, title: str = "Review") -> dict[str, Any]:
+async def start_review_impl(content: str, title: str = "Review", timeout: int = 600) -> dict[str, Any]:
     """
     Implementation of the start_review tool.
 
     Args:
         content: Markdown content to review
         title: Title for the review UI
+        timeout: Timeout in seconds (default: 600 = 10 minutes)
 
     Returns:
         Review results with status, items, and summary
@@ -165,16 +172,16 @@ async def start_review_impl(content: str, title: str = "Review") -> dict[str, An
         url = f"http://localhost:{port}/index.html"
         webbrowser.open(url)
 
-        # Wait for result (timeout: 5 minutes)
-        timeout = 300
+        # Wait for result
         result_received = await asyncio.get_event_loop().run_in_executor(
             None, lambda: _result_event.wait(timeout)
         )
 
         if not result_received:
+            minutes = timeout // 60
             return {
                 "status": "timeout",
-                "message": "Review timed out after 5 minutes"
+                "message": f"Review timed out after {minutes} minutes"
             }
 
         if _review_result is None:
@@ -245,6 +252,13 @@ Returns structured feedback with approval status and comments for each item.""",
                         "type": "string",
                         "description": "Title for the review UI",
                         "default": "Review"
+                    },
+                    "timeout": {
+                        "type": "integer",
+                        "description": "Timeout in seconds (default: 600 = 10 minutes)",
+                        "default": 600,
+                        "minimum": 60,
+                        "maximum": 3600
                     }
                 },
                 "required": ["content"]
@@ -259,8 +273,9 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     if name == "start_review":
         content = arguments.get("content", "")
         title = arguments.get("title", "Review")
+        timeout = arguments.get("timeout", 600)
 
-        result = await start_review_impl(content, title)
+        result = await start_review_impl(content, title, timeout)
 
         return [TextContent(
             type="text",
@@ -279,8 +294,12 @@ def setup_signal_handlers():
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, handle_shutdown)
-    signal.signal(signal.SIGHUP, handle_shutdown)
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
+    # SIGHUP and SIGPIPE are Unix-only signals
+    if hasattr(signal, 'SIGHUP'):
+        signal.signal(signal.SIGHUP, handle_shutdown)
+    if hasattr(signal, 'SIGPIPE'):
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
 async def main():
