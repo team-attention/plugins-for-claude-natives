@@ -15,7 +15,6 @@ Provides the start_review tool that:
 """
 
 import asyncio
-import io
 import json
 import os
 import signal
@@ -28,8 +27,8 @@ import webbrowser
 
 # Windows stdout UTF-8 encoding fix
 if sys.platform == 'win32':
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
 from dataclasses import asdict
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
@@ -178,10 +177,10 @@ async def start_review_impl(content: str, title: str = "Review", timeout: int = 
         )
 
         if not result_received:
-            minutes = timeout // 60
+            minutes = round(timeout / 60)
             return {
                 "status": "timeout",
-                "message": f"Review timed out after {minutes} minutes"
+                "message": f"Review timed out after {minutes} minute{'s' if minutes != 1 else ''}"
             }
 
         if _review_result is None:
