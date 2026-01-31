@@ -55,6 +55,11 @@
       "name": "doubt",
       "description": "Force Claude to re-validate when you have doubts (!doubt)",
       "source": "./plugins/doubt"
+    },
+    {
+      "name": "gmail",
+      "description": "Multi-account Gmail integration - read, search, send, and manage emails with 5-step sending workflow",
+      "source": "./plugins/gmail"
     }
   ]
 }

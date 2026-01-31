@@ -1,0 +1,27 @@
+# Gmail Account Settings Default Template
+# Copy this file to ../accounts.yaml for use
+#
+# Usage:
+#   cp assets/accounts.default.yaml accounts.yaml
+#   # Edit accounts.yaml, then
+#   uv run python scripts/setup_auth.py --account <name>
+
+accounts:
+  # Personal Gmail account
+  personal:
+    email: your-personal@gmail.com
+    description: Personal Gmail
+
+  # Work/Business account
+  work:
+    email: your-work@company.com
+    description: Work account
+
+  # Additional account example (uncomment if needed)
+  # project:
+  #   email: project@domain.com
+  #   description: For specific project
+
+# After setup, run authentication for each account:
+#   uv run python scripts/setup_auth.py --account personal
+#   uv run python scripts/setup_auth.py --account work

@@ -1,14 +1,12 @@
-# OAuth credentials and tokens
-accounts/*.json
+# OAuth tokens (contain refresh tokens)
+accounts/
+
+# OAuth client credentials
 references/credentials.json
 
-# Python
+# Virtual environment
+.venv/
+
+# Python cache
 __pycache__/
 *.pyc
-*.pyo
-.venv/
-.uv/
-uv.lock
-
-# macOS
-.DS_Store

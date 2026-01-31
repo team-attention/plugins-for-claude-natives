@@ -1,186 +1,190 @@
-# Gmail Plugin
+# Gmail Plugin for Claude Code
 
-Multi-account Gmail integration with email reading, searching, sending, and management.
+A comprehensive Gmail integration plugin for Claude Code that enables multi-account email management through the Gmail API. Read, search, send, and organize emails directly from your Claude Code sessions.
+
+## Overview
+
+The Gmail plugin provides a complete email management solution for Claude Code, supporting multiple Google accounts with features including:
+
+- **Multi-Account Support**: Manage personal, work, and project-specific Gmail accounts
+- **Full Email Operations**: List, read, send, reply, and organize emails
+- **Smart Caching**: Local caching for optimized API usage
+- **Rate Limiting**: Built-in quota management to prevent API throttling
+- **Batch Operations**: Efficient bulk operations for label management and cleanup
+- **5-Step Sending Workflow**: Structured email composition with test sends and user confirmation
 
 ## Features
 
-- Query multiple Google accounts (work, personal) in parallel
-- Search emails with Gmail query syntax
-- Send emails with attachments, HTML support
-- Manage labels, drafts, and message status
-- 4-step email sending workflow with test delivery
-- OAuth2 authentication with stored refresh tokens
+### Core Email Operations
+- List and search emails with Gmail's powerful query syntax
+- Read individual messages and entire threads
+- Send new emails with plain text or HTML content
+- Reply to existing conversations
+- Attach files to outgoing emails
+- Save emails as drafts
 
-## Installation
+### Organization & Management
+- Create, update, and delete labels
+- Mark messages as read/unread
+- Star/unstar messages
+- Archive and trash messages
+- Batch modify labels across multiple messages
 
-```bash
-/plugin install gmail
-```
+### Advanced Features
+- **Local Caching**: Reduces API calls by caching message lists and content
+- **Quota Management**: Tracks usage against Gmail API limits (250 units/second)
+- **Exponential Backoff**: Automatic retry with intelligent delays for rate limiting
+- **Batch Processing**: Efficient bulk operations for high-volume tasks
 
 ## Prerequisites
 
-### Option 1: Claude in Chrome (Recommended for Non-Developers)
+Before using this plugin, you need:
 
-If you don't have gcloud CLI set up, Claude can help you configure Google Cloud Console through browser automation:
+1. **Python 3.10+** with `uv` package manager
+2. **Google Cloud Project** with Gmail API enabled
+3. **OAuth 2.0 credentials** (Desktop application type)
 
-1. Tell Claude: "Help me set up Gmail API credentials using Claude in Chrome"
-2. Claude will guide you through:
-   - Creating a Google Cloud project
-   - Enabling Gmail API
-   - Creating OAuth 2.0 credentials
-   - Downloading credentials.json
+### Required Google OAuth Scopes
+- `gmail.modify` - Read, modify, and delete emails
+- `gmail.send` - Send emails on behalf of the user
+- `gmail.labels` - Manage email labels
 
-### Option 2: Manual Setup
+## Setup Guide
 
-1. Create a project at [Google Cloud Console](https://console.cloud.google.com)
-2. Enable Gmail API
-3. Create OAuth 2.0 Client ID (Desktop type)
-4. Download `credentials.json` → save to `references/credentials.json`
+### Step 1: Create Google Cloud Project
 
-### Account Authentication (one-time)
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Click the project selector at the top and select "New Project"
+3. Enter a project name (e.g., `gmail-skill`) and click "Create"
+
+### Step 2: Enable Gmail API
+
+1. Navigate to "APIs & Services" > "Library" in the left menu
+2. Search for "Gmail API"
+3. Click the "Enable" button
+
+### Step 3: Configure OAuth Consent Screen
+
+1. Go to "APIs & Services" > "OAuth consent screen"
+2. Select "External" for User Type and click "Create"
+3. Fill in the required fields:
+   - App name: `Gmail Skill`
+   - User support email: Your email address
+   - Developer contact: Your email address
+4. Click "Save and Continue"
+5. Add the following scopes:
+   - `https://www.googleapis.com/auth/gmail.modify`
+   - `https://www.googleapis.com/auth/gmail.send`
+   - `https://www.googleapis.com/auth/gmail.labels`
+6. Add your Gmail address as a test user
+7. Click "Save and Continue"
+
+### Step 4: Create OAuth Client ID
+
+1. Go to "APIs & Services" > "Credentials"
+2. Click "Create Credentials" > "OAuth client ID"
+3. Select "Desktop app" as the application type
+4. Enter a name (e.g., `Gmail Skill Client`)
+5. Click "Create"
+6. Download the JSON file
+
+### Step 5: Configure the Plugin
 
 ```bash
-cd skills/gmail
+# Navigate to the skill directory
+cd .claude/skills/gmail
 
-# Install dependencies
-uv sync
+# Move the downloaded credentials file
+mv ~/Downloads/client_secret_*.json references/credentials.json
 
-# Authenticate accounts (name them as you like)
-uv run python scripts/setup_auth.py --account work
+# Copy the default accounts configuration
+cp assets/accounts.default.yaml accounts.yaml
+
+# Edit accounts.yaml with your account information
+```
+
+### Step 6: Authenticate Accounts
+
+```bash
+# Authenticate each account
 uv run python scripts/setup_auth.py --account personal
+uv run python scripts/setup_auth.py --account work
+
+# Verify registered accounts
+uv run python scripts/setup_auth.py --list
 ```
 
-Browser will open for Google login → refresh token saved to `accounts/{name}.json`
+When the browser opens:
+1. Log in to your Google account
+2. If you see "This app isn't verified", click "Advanced" > "Continue"
+3. Approve all permission requests
 
-### Alternative: gcloud ADC
+## Usage Examples
 
-```bash
-gcloud auth application-default login \
-    --scopes=https://www.googleapis.com/auth/gmail.modify,https://www.googleapis.com/auth/gmail.send,https://www.googleapis.com/auth/gmail.labels
-```
-
-Use `--adc` flag when running scripts.
-
-## Usage
-
-Ask Claude about your email:
-
-- "Check my unread emails"
-- "Search for emails from boss@company.com"
-- "Send an email to colleague@company.com"
-- "Reply to this email"
-- "Mark this email as read"
-
-## CLI Scripts
-
-This plugin provides 5 CLI scripts for different operations:
-
-### Script Overview
-
-| Script | Purpose | When to Use |
-|--------|---------|-------------|
-| `list_messages.py` | Search/list emails | "What emails do I have?" |
-| `read_message.py` | Read single email/thread | "Show me this email's full content" |
-| `send_message.py` | Send/reply emails | "Send an email to..." |
-| `manage_labels.py` | Labels, drafts, status | "Mark as read", "Add label" |
-| `setup_auth.py` | Account authentication | One-time setup |
-
-### list_messages.py - Search & List
-
-Search and list emails with query filters. Shows **summary** (subject, from, snippet).
+### List Messages
 
 ```bash
-# Recent 10 emails
+# List recent 10 emails
 uv run python scripts/list_messages.py --account work --max 10
 
-# Unread emails
+# List unread emails
 uv run python scripts/list_messages.py --account work --query "is:unread"
 
-# From specific sender
-uv run python scripts/list_messages.py --account work --query "from:boss@company.com"
+# Search by sender
+uv run python scripts/list_messages.py --account work --query "from:user@example.com"
 
-# With date range
+# Search by date range
 uv run python scripts/list_messages.py --account work --query "after:2024/01/01 before:2024/12/31"
 
-# Filter by labels
+# Filter by label
 uv run python scripts/list_messages.py --account work --labels INBOX,IMPORTANT
 
-# Show full content (truncated to 500 chars)
+# Include full message content
 uv run python scripts/list_messages.py --account work --full
 
-# JSON output
+# Output as JSON
 uv run python scripts/list_messages.py --account work --json
 ```
 
-### read_message.py - Read Full Content
-
-Read **single message** or **entire thread** with full body. Supports attachment download.
+### Read Messages
 
 ```bash
-# Read single message
+# Read a specific message
 uv run python scripts/read_message.py --account work --id <message_id>
 
-# Read entire thread
+# Read an entire thread
 uv run python scripts/read_message.py --account work --thread <thread_id>
 
-# Download attachments
+# Save attachments to a directory
 uv run python scripts/read_message.py --account work --id <message_id> --save-attachments ./downloads
-
-# JSON output
-uv run python scripts/read_message.py --account work --id <message_id> --json
 ```
 
-### list vs read - When to Use Which?
-
-| Scenario | Use This |
-|----------|----------|
-| "What emails came today?" | `list_messages.py --query "newer_than:1d"` |
-| "Show me emails from John" | `list_messages.py --query "from:john@..."` |
-| "Read this email in full" | `read_message.py --id <id>` |
-| "Show me the whole conversation" | `read_message.py --thread <thread_id>` |
-| "Download the attachment" | `read_message.py --id <id> --save-attachments ./` |
-
-**Typical workflow:**
-```bash
-# 1. Find emails
-uv run python scripts/list_messages.py --query "from:boss@company.com"
-# → Shows: 📩 [Urgent] Meeting Request (ID: abc123)
-
-# 2. Read the one you want
-uv run python scripts/read_message.py --id abc123
-
-# 3. Download attachments if needed
-uv run python scripts/read_message.py --id abc123 --save-attachments ./downloads
-```
-
-### send_message.py - Send Emails
-
-Send new emails, replies, or save drafts.
+### Send Messages
 
 ```bash
-# New email
+# Send a new email
 uv run python scripts/send_message.py --account work \
-    --to "recipient@example.com" \
+    --to "user@example.com" \
     --subject "Hello" \
     --body "Email content here."
 
-# HTML email
+# Send HTML email
 uv run python scripts/send_message.py --account work \
-    --to "recipient@example.com" \
-    --subject "Newsletter" \
+    --to "user@example.com" \
+    --subject "Announcement" \
     --body "<h1>Title</h1><p>Content</p>" \
     --html
 
-# With attachments
+# Send with attachments
 uv run python scripts/send_message.py --account work \
-    --to "recipient@example.com" \
-    --subject "Files attached" \
-    --body "Please review." \
+    --to "user@example.com" \
+    --subject "File Transfer" \
+    --body "Please check the attachments." \
     --attach file1.pdf,file2.xlsx
 
-# Reply to existing thread
+# Reply to a message
 uv run python scripts/send_message.py --account work \
-    --to "recipient@example.com" \
+    --to "user@example.com" \
     --subject "Re: Original Subject" \
     --body "Reply content" \
     --reply-to <message_id> \
@@ -188,32 +192,32 @@ uv run python scripts/send_message.py --account work \
 
 # Save as draft
 uv run python scripts/send_message.py --account work \
-    --to "recipient@example.com" \
-    --subject "Draft email" \
-    --body "Content" \
+    --to "user@example.com" \
+    --subject "Draft Email" \
+    --body "Draft content" \
     --draft
 ```
 
-### manage_labels.py - Labels & Message Management
+### Manage Labels and Messages
 
 ```bash
-# List labels
+# List all labels
 uv run python scripts/manage_labels.py --account work list-labels
 
-# Create label
+# Create a new label
 uv run python scripts/manage_labels.py --account work create-label --name "Project/A"
 
 # Mark as read
 uv run python scripts/manage_labels.py --account work mark-read --id <message_id>
 
-# Star/unstar
+# Star/unstar messages
 uv run python scripts/manage_labels.py --account work star --id <message_id>
 uv run python scripts/manage_labels.py --account work unstar --id <message_id>
 
-# Archive
+# Archive a message
 uv run python scripts/manage_labels.py --account work archive --id <message_id>
 
-# Trash/untrash
+# Move to trash
 uv run python scripts/manage_labels.py --account work trash --id <message_id>
 uv run python scripts/manage_labels.py --account work untrash --id <message_id>
 
@@ -224,71 +228,254 @@ uv run python scripts/manage_labels.py --account work modify --id <message_id> \
 # List drafts
 uv run python scripts/manage_labels.py --account work list-drafts
 
-# Send draft
+# Send a draft
 uv run python scripts/manage_labels.py --account work send-draft --draft-id <draft_id>
 
-# View profile
+# View profile information
 uv run python scripts/manage_labels.py --account work profile
 ```
 
+## 5-Step Email Sending Workflow
+
+When Claude Code sends emails, it follows a structured 5-step workflow to ensure accuracy and prevent mistakes:
+
+| Step | Task | Key Action |
+|------|------|------------|
+| 1 | **Gather Context** | Run parallel exploration tasks: recipient info, related projects, background context |
+| 2 | **Check Previous Conversations** | Search `"to:recipient OR from:recipient newer_than:90d"` and ask user about thread selection |
+| 3 | **Draft Email** | Compose draft based on context and templates, ask user for feedback |
+| 4 | **Test Send** | Send `[TEST]` email to user's own address for review |
+| 5 | **Actual Send** | Send to recipient after user confirmation |
+
+### Workflow Example: "Send a meeting email to John"
+
+1. **Create 5 Tasks** using TaskCreate
+2. **Step 1**: Run parallel Explore tasks
+   - Search for John's contact info in `partners/`, `projects/`, `context.md`
+   - Search for meeting context (calendar, recent notes)
+3. **Step 2**: Search `"to:john@company.com OR from:john@company.com"`
+   - If previous conversation exists, ask user whether to reply or create new email
+4. **Step 3**: Draft email using appropriate template from `assets/email-templates.md`
+   - Ask user to review and approve
+5. **Step 4**: Test send to user's own email address
+   - Request confirmation after user reviews
+6. **Step 5**: Send to John
+   - Report completion
+
+**Signature**: All outgoing emails include the signature:
+```
+---
+Sent with Claude Code
+```
+
+## accounts.yaml Configuration
+
+The `accounts.yaml` file stores metadata about your Gmail accounts:
+
+```yaml
+# Gmail Account Settings
+# Token files are stored separately in accounts/{name}.json
+
+accounts:
+  # Personal Gmail account
+  personal:
+    email: your-personal@gmail.com
+    description: Personal Gmail
+
+  # Work/Business account
+  work:
+    email: your-work@company.com
+    description: Work account
+
+  # Additional account example
+  project:
+    email: project@domain.com
+    description: For specific project
+```
+
+After editing `accounts.yaml`, authenticate each account:
+```bash
+uv run python scripts/setup_auth.py --account personal
+uv run python scripts/setup_auth.py --account work
+```
+
+## Available Scripts
+
+### Main Scripts
+
+| Script | Description |
+|--------|-------------|
+| `setup_auth.py` | OAuth authentication setup for new accounts |
+| `list_messages.py` | List and search emails with various filters |
+| `read_message.py` | Read individual messages or entire threads |
+| `send_message.py` | Send new emails, replies, or save as drafts |
+| `manage_labels.py` | Label management and message organization |
+| `gmail_client.py` | Core Gmail API client library |
+
+### Core Modules (scripts/core/)
+
+| Module | Description |
+|--------|-------------|
+| `quota_manager.py` | Gmail API quota tracking and rate limiting |
+| `retry_handler.py` | Exponential backoff for API error handling |
+| `cache_manager.py` | Local caching for API response optimization |
+| `batch_processor.py` | Efficient bulk operations for multiple messages |
+
 ## Gmail Search Query Examples
+
+### Basic Queries
 
 | Query | Description |
 |-------|-------------|
 | `from:user@example.com` | From specific sender |
 | `to:user@example.com` | To specific recipient |
-| `subject:project` | Subject contains |
-| `is:unread` | Unread emails |
-| `is:starred` | Starred emails |
+| `subject:project` | Contains word in subject |
+| `is:unread` | Unread messages |
+| `is:starred` | Starred messages |
+| `is:important` | Marked as important |
 | `has:attachment` | Has attachments |
 | `filename:pdf` | PDF attachments |
-| `after:2024/01/01` | After date |
-| `before:2024/12/31` | Before date |
-| `newer_than:7d` | Within last 7 days |
-| `older_than:30d` | Older than 30 days |
+
+### Date Filters
+
+| Query | Description |
+|-------|-------------|
+| `after:2024/01/01` | After specific date |
+| `before:2024/12/31` | Before specific date |
+| `older_than:7d` | Older than 7 days |
+| `newer_than:1d` | Within last day |
+
+### Location Filters
+
+| Query | Description |
+|-------|-------------|
 | `in:inbox` | In inbox |
-| `in:sent` | In sent folder |
+| `in:sent` | In sent mail |
+| `in:drafts` | In drafts |
+| `in:trash` | In trash |
 | `label:work` | Has specific label |
 
-**Combined queries:**
+### Compound Query Examples
+
+```bash
+# Unread from specific sender
+from:boss@company.com is:unread
+
+# Attachments in last 7 days
+has:attachment newer_than:7d
+
+# Excel files in date range
+has:attachment filename:xlsx after:2024/01/01 before:2024/12/31
+
+# Important unread emails
+is:unread is:important
+
+# Starred with specific label
+label:projects is:starred
 ```
-from:boss@company.com is:unread after:2024/01/01
-has:attachment filename:xlsx newer_than:7d
+
+## Troubleshooting
+
+### "credentials.json file not found"
+
+Ensure you have:
+1. Downloaded the OAuth client ID JSON from Google Cloud Console
+2. Saved it to `references/credentials.json`
+
+### "Token has expired"
+
+Tokens auto-refresh, but if that fails:
+```bash
+uv run python scripts/setup_auth.py --account <name>
 ```
+
+### "This app isn't verified"
+
+This is normal for personal OAuth apps. Click "Advanced" > "Continue" during authentication.
+
+### "Insufficient permissions"
+
+Ensure these scopes are enabled in your OAuth consent screen:
+- `gmail.modify`
+- `gmail.send`
+- `gmail.labels`
+
+### "Rate limit exceeded"
+
+The plugin includes built-in rate limiting. If you hit limits:
+- Wait a few seconds before retrying
+- The exponential backoff will handle automatic retries
+- Check quota status with `get_quota_status()` method
+
+### "Account not found"
+
+1. Verify the account exists in `accounts.yaml`
+2. Check that the token file exists in `accounts/{name}.json`
+3. Re-run authentication if needed
+
+## Security Notes
+
+### Credential Storage
+- **credentials.json**: Contains your OAuth client ID and secret. Keep this secure and never commit to version control.
+- **accounts/*.json**: Contains refresh tokens for each account. These are gitignored by default.
+- **accounts.yaml**: Contains only email addresses and descriptions (no secrets).
+
+### Best Practices
+1. Add `references/credentials.json` and `accounts/` to your `.gitignore`
+2. Never share or commit token files
+3. Use separate Google Cloud projects for development and production
+4. Regularly review OAuth consent screen test users
+5. Revoke access from [Google Account Security](https://myaccount.google.com/permissions) if needed
+
+### Data Privacy
+- Emails are accessed only when explicitly requested
+- Caching is local to your machine
+- No data is sent to external services beyond the Gmail API
+- Test sends go to your own email address for review
 
 ## File Structure
 
 ```
 skills/gmail/
-├── SKILL.md                    # Skill documentation
-├── pyproject.toml              # Dependencies
+├── SKILL.md                    # Skill configuration for Claude Code
+├── accounts.yaml               # Account metadata (emails, descriptions)
 ├── scripts/
-│   ├── gmail_client.py         # API client library
-│   ├── setup_auth.py           # Authentication setup
-│   ├── list_messages.py        # List/search emails
-│   ├── read_message.py         # Read single email/thread
-│   ├── send_message.py         # Send emails
-│   └── manage_labels.py        # Labels/drafts management
+│   ├── gmail_client.py         # Core Gmail API client
+│   ├── list_messages.py        # List/search messages CLI
+│   ├── read_message.py         # Read messages CLI
+│   ├── send_message.py         # Send messages CLI
+│   ├── manage_labels.py        # Label management CLI
+│   ├── setup_auth.py           # OAuth setup CLI
+│   └── core/
+│       ├── __init__.py
+│       ├── batch_processor.py  # Bulk operations
+│       ├── cache_manager.py    # Local caching
+│       ├── quota_manager.py    # Rate limiting
+│       └── retry_handler.py    # Error handling
 ├── references/
-│   └── credentials.json        # OAuth Client ID (gitignore)
-└── accounts/                   # Account tokens (gitignore)
-    └── {account_name}.json
+│   ├── credentials.json        # OAuth Client ID (gitignored)
+│   ├── setup-guide.md          # Detailed setup instructions
+│   ├── cli-usage.md            # CLI command reference
+│   └── search-queries.md       # Gmail query syntax reference
+├── assets/
+│   ├── accounts.default.yaml   # Default accounts template
+│   ├── email-templates.md      # Email body templates
+│   └── signatures.md           # Signature templates
+└── accounts/                   # Per-account tokens (gitignored)
+    ├── personal.json
+    └── work.json
 ```
 
-## API Scopes
+## Environment Variables
 
-| Scope | Purpose |
-|-------|---------|
-| `gmail.modify` | Read/modify/delete messages |
-| `gmail.send` | Send emails |
-| `gmail.labels` | Manage labels |
-
-## Security Notes
-
-- `accounts/*.json`: Contains refresh tokens - **never commit**
-- `references/credentials.json`: Contains client secret - **never commit**
-- Both directories are in `.gitignore`
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GMAIL_SKILL_PATH` | Auto-detected | Skill root path |
+| `GMAIL_TIMEOUT` | `30` | API request timeout (seconds) |
+| `GMAIL_CACHE_DIR` | `.cache/gmail` | Cache directory location |
+| `GMAIL_ENABLE_CACHE` | `true` | Enable/disable caching |
+| `GMAIL_ENABLE_QUOTA` | `true` | Enable/disable quota management |
 
 ## License
 
-MIT
+This plugin is part of the [plugins-for-claude-natives](https://github.com/team-attention/plugins-for-claude-natives) project.

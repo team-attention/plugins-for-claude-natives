@@ -42,7 +42,7 @@ import argparse
 import json
 from pathlib import Path
 
-from gmail_client import GmailClient, ADCGmailClient, get_all_accounts
+from gmail_client import ADCGmailClient, GmailClient, get_all_accounts
 
 
 def main():

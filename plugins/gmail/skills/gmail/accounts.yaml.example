@@ -1,0 +1,12 @@
+# Gmail 계정 설정
+# 계정별로 이메일 주소와 설명을 관리합니다.
+# 토큰 파일은 accounts/{name}.json에 별도 저장됩니다.
+
+accounts:
+  personal:
+    email: bongbonggg97@gmail.com
+    description: 개인 Gmail
+
+  work:
+    email: bong@team-attention.com
+    description: Team Attention 업무용

@@ -264,21 +264,32 @@ Read, search, send, and manage emails across multiple Google accounts with full 
 - "mark as read"
 
 **Features:**
-- Multi-account support (work, personal, etc.)
+- Multi-account support via `accounts.yaml` (work, personal, etc.)
 - Gmail search query syntax support
 - Email sending with attachments and HTML
 - Label and draft management
-- 4-step email sending workflow with test delivery
+- **5-step email sending workflow** with context gathering, draft review, and test delivery
+- Rate limiting and quota management
+- Batch processing and local caching
 
-**Setup options:**
-1. **Claude in Chrome** (recommended for non-developers): Let Claude guide you through GCP Console setup via browser automation
-2. **Manual setup**: Create Google Cloud project with Gmail API, then run setup script
+**5-Step Email Workflow:**
+1. **Context gathering** - Parallel Explore agents search recipient info and related projects
+2. **Previous conversations** - Search recent emails to determine reply vs new thread
+3. **Draft composition** - Create draft with user feedback
+4. **Test send** - Send to your own email for verification
+5. **Actual send** - Deliver to recipient
+
+**Setup:**
+1. Create Google Cloud project with Gmail API enabled
+2. Run setup script for each account
 
 ```bash
 # One-time setup per account
 uv run python scripts/setup_auth.py --account work
 uv run python scripts/setup_auth.py --account personal
 ```
+
+Account metadata is stored in `accounts.yaml` for easy management.
 
 ---
 
