@@ -1,5 +1,5 @@
 # OAuth credentials and tokens
-accounts/
+accounts/*.json
 references/credentials.json
 
 # Python

@@ -38,11 +38,51 @@ Gmail API를 통해 이메일을 읽고, 검색하고, 발송하고, 관리하�
 - "별표 추가해줘", "보관처리해줘"
 - "라벨 붙여줘", "휴지통으로 이동"
 
-## 사전 요구사항
+## 계정 설정
 
-### Option 1: Claude in Chrome (비개발자 권장)
+### accounts.yaml
 
-gcloud CLI가 설치되어 있지 않다면, Claude가 브라우저 자동화를 통해 Google Cloud Console 설정을 도와줄 수 있습니다:
+**스킬 실행 전 `accounts.yaml`을 먼저 읽어 등록된 계정 확인:**
+
+```yaml
+# accounts.yaml 예시
+accounts:
+  personal:
+    email: user@gmail.com
+    description: 개인 Gmail
+
+  work:
+    email: user@company.com
+    description: 회사 업무용
+```
+
+계정 목록 확인:
+```bash
+uv run python scripts/setup_auth.py --list
+```
+
+### 계정 추가 (최초 1회)
+
+```bash
+cd ${CLAUDE_PLUGIN_ROOT}/skills/gmail
+
+# 의존성 설치
+uv sync
+
+# 개인 계정 인증 (이메일은 자동 감지)
+uv run python scripts/setup_auth.py --account personal --description '개인 Gmail'
+
+# 회사 계정 인증
+uv run python scripts/setup_auth.py --account work --description '회사 업무용'
+```
+
+브라우저에서 Google 로그인 → 계정 정보가 `accounts.yaml`에, 토큰이 `accounts/{name}.json`에 저장됨.
+
+### Google Cloud 프로젝트 설정
+
+**Option 1: Claude in Chrome (비개발자 권장)**
+
+gcloud CLI가 설치되어 있지 않다면, Claude가 브라우저 자동화를 통해 설정을 도와줍니다:
 
 1. Claude에게 말하기: "Claude in Chrome으로 Gmail API 설정 도와줘"
 2. Claude가 안내하는 단계:
@@ -52,36 +92,16 @@ gcloud CLI가 설치되어 있지 않다면, Claude가 브라우저 자동화를
    - OAuth 2.0 클라이언트 ID 생성 (Desktop 유형)
    - `credentials.json` 다운로드
 
-### Option 2: 수동 설정
+**Option 2: 수동 설정**
 
 1. [Google Cloud Console](https://console.cloud.google.com)에서 프로젝트 생성
 2. Gmail API 활성화
 3. OAuth 2.0 Client ID 생성 (Desktop 유형)
 4. `credentials.json` 다운로드 → `references/credentials.json`에 저장
 
-### 계정별 인증 (최초 1회)
-
-```bash
-cd ${CLAUDE_PLUGIN_ROOT}/skills/gmail
-
-# 의존성 설치
-uv sync
-
-# 계정 인증 (계정명은 자유롭게 설정)
-uv run python scripts/setup_auth.py --account ${ACCOUNT_NAME}
-
-# 예시: 회사 계정
-uv run python scripts/setup_auth.py --account work
-
-# 예시: 개인 계정
-uv run python scripts/setup_auth.py --account personal
-```
-
-브라우저에서 Google 로그인 → refresh token이 `accounts/${ACCOUNT_NAME}.json`에 저장됨
-
 ### (선택) gcloud ADC 사용
 
-OAuth 클라이언트 대신 gcloud ADC를 사용할 수도 있음:
+OAuth 클라이언트 대신 gcloud ADC 사용 가능:
 
 ```bash
 gcloud auth application-default login \
@@ -394,8 +414,10 @@ HTML 메일의 경우:
 ### 사용자: "안 읽은 중요 메일 확인해줘"
 
 ```
-1. accounts/ 폴더 확인
-   └── 등록된 계정: work, personal
+1. accounts.yaml 읽기
+   └── 등록된 계정:
+       - personal: user@gmail.com (개인 Gmail)
+       - work: user@company.com (회사 업무용)
 
 2. 쿼리 실행
    └── "is:unread is:important"
@@ -469,6 +491,7 @@ HTML 메일의 경우:
 skills/gmail/
 ├── SKILL.md                    # 이 파일
 ├── pyproject.toml              # 의존성
+├── accounts.yaml               # 계정 메타데이터 (이메일, 설명)
 ├── scripts/
 │   ├── gmail_client.py         # API 클라이언트
 │   ├── setup_auth.py           # 인증 설정
@@ -479,7 +502,7 @@ skills/gmail/
 ├── references/
 │   └── credentials.json        # OAuth Client ID (gitignore)
 └── accounts/                   # 계정별 토큰 (gitignore)
-    └── ${ACCOUNT_NAME}.json
+    └── {account_name}.json
 ```
 
 ## API 권한 (Scopes)

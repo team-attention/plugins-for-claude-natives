@@ -5,8 +5,8 @@
 이후에는 저장된 token으로 자동 인증됨.
 
 Usage:
-    uv run python setup_auth.py --account work
-    uv run python setup_auth.py --account personal
+    uv run python setup_auth.py --account personal --email user@gmail.com
+    uv run python setup_auth.py --account work --email work@company.com --description "회사 업무용"
     uv run python setup_auth.py --list
 """
 
@@ -14,6 +14,7 @@ import argparse
 import json
 from pathlib import Path
 
+import yaml
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 SCOPES = [
@@ -23,12 +24,44 @@ SCOPES = [
 ]
 
 
-def setup_auth(account_name: str, base_path: Path) -> None:
+def load_accounts_config(base_path: Path) -> dict:
+    """accounts.yaml 로드."""
+    config_path = base_path / "accounts.yaml"
+    if config_path.exists():
+        with open(config_path) as f:
+            return yaml.safe_load(f) or {"accounts": {}}
+    return {"accounts": {}}
+
+
+def save_accounts_config(base_path: Path, config: dict) -> None:
+    """accounts.yaml 저장."""
+    config_path = base_path / "accounts.yaml"
+
+    # YAML 헤더 코멘트
+    header = """# Gmail 계정 설정
+# 계정별로 이메일 주소와 설명을 관리합니다.
+# 토큰 파일은 accounts/{name}.json에 별도 저장됩니다.
+
+"""
+
+    with open(config_path, "w") as f:
+        f.write(header)
+        yaml.dump(config, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+
+def setup_auth(
+    account_name: str,
+    base_path: Path,
+    email: str | None = None,
+    description: str | None = None,
+) -> None:
     """OAuth 인증 플로우 실행 및 토큰 저장.
 
     Args:
         account_name: 계정 식별자 (예: 'work', 'personal')
         base_path: skill 루트 경로
+        email: 이메일 주소 (accounts.yaml에 저장)
+        description: 계정 설명 (accounts.yaml에 저장)
     """
     credentials_path = base_path / "references" / "credentials.json"
     token_path = base_path / "accounts" / f"{account_name}.json"
@@ -67,28 +100,77 @@ def setup_auth(account_name: str, base_path: Path) -> None:
     with open(token_path, "w") as f:
         json.dump(json.loads(creds.to_json()), f, indent=2)
 
+    # accounts.yaml 업데이트
+    config = load_accounts_config(base_path)
+
+    # 인증된 이메일 주소 가져오기 (제공되지 않은 경우)
+    if not email:
+        try:
+            from googleapiclient.discovery import build
+            from google.oauth2.credentials import Credentials
+
+            temp_creds = Credentials.from_authorized_user_info(
+                json.loads(creds.to_json()),
+                SCOPES,
+            )
+            service = build("gmail", "v1", credentials=temp_creds)
+            profile = service.users().getProfile(userId="me").execute()
+            email = profile.get("emailAddress", "")
+        except Exception:
+            email = ""
+
+    config["accounts"][account_name] = {
+        "email": email,
+        "description": description or "",
+    }
+    save_accounts_config(base_path, config)
+
     print()
-    print(f"✅ 인증 완료! 토큰 저장됨: {token_path}")
-    print(f"   계정: {account_name}")
+    print(f"✅ 인증 완료!")
+    print(f"   계정명: {account_name}")
+    print(f"   이메일: {email}")
+    print(f"   토큰: {token_path}")
 
 
 def list_accounts(base_path: Path) -> None:
     """등록된 계정 목록 출력."""
+    config = load_accounts_config(base_path)
     accounts_dir = base_path / "accounts"
 
-    if not accounts_dir.exists():
-        print("등록된 계정이 없습니다.")
-        return
+    # accounts.yaml에서 계정 정보 읽기
+    accounts_config = config.get("accounts", {})
 
-    accounts = [f.stem for f in accounts_dir.glob("*.json")]
+    # 토큰 파일 존재 여부 확인
+    token_files = set()
+    if accounts_dir.exists():
+        token_files = {f.stem for f in accounts_dir.glob("*.json")}
 
-    if not accounts:
+    if not accounts_config and not token_files:
         print("등록된 계정이 없습니다.")
         return
 
     print("📋 등록된 계정:")
-    for account in accounts:
-        print(f"   - {account}")
+    print()
+
+    # accounts.yaml에 있는 계정 출력
+    for name, info in accounts_config.items():
+        email = info.get("email", "")
+        description = info.get("description", "")
+        has_token = "✅" if name in token_files else "❌"
+
+        print(f"   {has_token} {name}")
+        if email:
+            print(f"      이메일: {email}")
+        if description:
+            print(f"      설명: {description}")
+        print()
+
+    # 토큰은 있지만 accounts.yaml에 없는 계정 경고
+    orphan_tokens = token_files - set(accounts_config.keys())
+    if orphan_tokens:
+        print("⚠️  accounts.yaml에 없는 토큰:")
+        for name in orphan_tokens:
+            print(f"   - {name}.json")
 
 
 def main():
@@ -97,6 +179,16 @@ def main():
         "--account",
         "-a",
         help="계정 식별자 (예: work, personal)",
+    )
+    parser.add_argument(
+        "--email",
+        "-e",
+        help="이메일 주소 (자동 감지되지만 명시 가능)",
+    )
+    parser.add_argument(
+        "--description",
+        "-d",
+        help="계정 설명 (예: '회사 업무용')",
     )
     parser.add_argument(
         "--list",
@@ -116,12 +208,12 @@ def main():
         parser.print_help()
         print()
         print("예시:")
-        print("  uv run python setup_auth.py --account work")
-        print("  uv run python setup_auth.py --account personal")
+        print("  uv run python setup_auth.py --account personal --description '개인 Gmail'")
+        print("  uv run python setup_auth.py --account work --description '회사 업무용'")
         print("  uv run python setup_auth.py --list")
         return
 
-    setup_auth(args.account, base_path)
+    setup_auth(args.account, base_path, args.email, args.description)
 
 
 if __name__ == "__main__":
