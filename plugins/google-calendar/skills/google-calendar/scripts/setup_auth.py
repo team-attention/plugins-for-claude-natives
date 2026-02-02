@@ -15,8 +15,54 @@ from pathlib import Path
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 
+from calendar_client import CalendarClient, save_calendar_config, select_primary_calendar_interactive
 
-SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
+
+SCOPES = ["https://www.googleapis.com/auth/calendar"]  # 읽기/쓰기 권한
+
+
+def select_calendars_interactive(client: CalendarClient) -> list[dict]:
+    """사용자에게 캘린더 선택 받기.
+
+    Args:
+        client: 인증된 CalendarClient 인스턴스
+
+    Returns:
+        선택된 캘린더 설정 리스트
+    """
+    calendars = client.list_calendars()
+
+    print("\n📋 사용 가능한 캘린더:")
+    for i, cal in enumerate(calendars, 1):
+        primary = " (기본)" if cal.get("primary") else ""
+        role = cal.get("access_role", "unknown")
+        print(f"  [{i:2}] {cal['summary']}{primary}  ({role})")
+
+    print("\n조회할 캘린더 번호를 입력하세요 (쉼표 구분, 예: 1,2,3)")
+    print("Enter를 누르면 모든 캘린더 선택")
+
+    selection = input("> ").strip()
+
+    if not selection:
+        # 전체 선택
+        return [
+            {"id": c["id"], "alias": c["summary"], "enabled": True}
+            for c in calendars
+        ]
+
+    try:
+        indices = [int(x.strip()) - 1 for x in selection.split(",")]
+        return [
+            {"id": calendars[i]["id"], "alias": calendars[i]["summary"], "enabled": True}
+            for i in indices
+            if 0 <= i < len(calendars)
+        ]
+    except ValueError:
+        print("⚠️  잘못된 입력입니다. 모든 캘린더를 선택합니다.")
+        return [
+            {"id": c["id"], "alias": c["summary"], "enabled": True}
+            for c in calendars
+        ]
 
 
 def setup_auth(account_name: str, base_path: Path) -> None:
@@ -69,6 +115,26 @@ def setup_auth(account_name: str, base_path: Path) -> None:
     print()
     print(f"✅ 인증 완료! 토큰 저장됨: {token_path}")
     print(f"   계정: {account_name}")
+
+    # 캘린더 선택
+    print("\n📅 캘린더 설정을 진행합니다...")
+    try:
+        client = CalendarClient(account_name, base_path)
+        selected_calendars = select_calendars_interactive(client)
+        selected_calendars = select_primary_calendar_interactive(selected_calendars)
+
+        if selected_calendars:
+            config = {"calendars": selected_calendars}
+            config_path = save_calendar_config(account_name, config, base_path)
+            print(f"\n✅ 캘린더 설정 저장됨: {config_path}")
+            print(f"   선택된 캘린더: {len(selected_calendars)}개")
+            for cal in selected_calendars:
+                print(f"     - {cal['alias']}")
+        else:
+            print("⚠️  선택된 캘린더가 없습니다. 기본 캘린더(primary)만 사용됩니다.")
+    except Exception as e:
+        print(f"⚠️  캘린더 설정 중 오류 발생: {e}")
+        print("   나중에 manage_config.py로 설정할 수 있습니다.")
 
 
 def list_accounts(base_path: Path) -> None:
