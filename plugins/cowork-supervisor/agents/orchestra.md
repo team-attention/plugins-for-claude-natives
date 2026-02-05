@@ -9,7 +9,6 @@ tools:
   - Read
   - Glob
   - Grep
-  - Bash
 model: sonnet
 ---
 
