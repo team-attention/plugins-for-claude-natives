@@ -1,8 +1,10 @@
 ---
+name: supervise
 description: >
   Orchestrate multiple Cowork plugins to solve complex tasks. Clarifies intent,
   discovers capabilities, plans execution, and coordinates plugins.
   Usage: /supervise "task description"
+allowed-tools: Task AskUserQuestion Read Glob Grep
 ---
 
 # /supervise Command
