@@ -24,8 +24,8 @@ A Claude Code plugin that speaks a short summary of Claude's response using macO
 # Install the plugin
 /plugin install say-summary
 
-# Run setup to create virtualenv and install dependencies (required)
-~/.claude/plugins/cache/team-attention-plugins/say-summary/*/scripts/setup.sh
+# Run setup. This finds the script for any installed versions and runs it.
+find ~/.claude/plugins/cache/team-attention-plugins/say-summary -name 'setup.sh' -exec {} \;
 ```
 
 ## How It Works
