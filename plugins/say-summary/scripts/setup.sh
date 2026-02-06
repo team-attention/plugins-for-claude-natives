@@ -9,9 +9,9 @@ VENV_DIR="${SCRIPT_DIR}/.venv"
 
 echo "Setting up say-summary plugin..."
 
-# Check if python3 is available
-if ! command -v python3 &> /dev/null; then
-    echo "Error: python3 is not installed. Please install Python 3.10+ first."
+# Check if python3 is available and is version 3.10+
+if ! python3 -c 'import sys; assert sys.version_info >= (3, 10)' &>/dev/null; then
+    echo "Error: Python 3.10+ is required. Please install a compatible version of Python 3."
     exit 1
 fi
 
