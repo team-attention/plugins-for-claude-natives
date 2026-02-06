@@ -24,14 +24,8 @@ A Claude Code plugin that speaks a short summary of Claude's response using macO
 # Install the plugin
 /plugin install say-summary
 
-# Run setup to install Python dependencies
-~/.claude/plugins/say-summary/scripts/setup.sh
-```
-
-Or manually install the dependency:
-
-```bash
-pip3 install --user claude-agent-sdk
+# Run setup to create virtualenv and install dependencies (required)
+~/.claude/plugins/cache/team-attention-plugins/say-summary/*/scripts/setup.sh
 ```
 
 ## How It Works
