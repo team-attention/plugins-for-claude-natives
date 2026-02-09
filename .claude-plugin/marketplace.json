@@ -13,7 +13,7 @@
     },
     {
       "name": "clarify",
-      "description": "Transform vague requirements into precise specifications through iterative questioning",
+      "description": "Three lenses for clarity: vague requirements to specs, strategy blind spots via Known/Unknown quadrants, and content vs form leverage analysis",
       "source": "./plugins/clarify"
     },
     {
