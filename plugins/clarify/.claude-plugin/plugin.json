@@ -1,13 +1,12 @@
 {
   "name": "clarify",
-  "version": "1.0.0",
-  "description": "Transform vague requirements into precise specifications through iterative questioning",
+  "version": "2.0.0",
+  "description": "Clarify the unclear: vague requirements (vague) and strategy blind spots (unknown)",
   "author": {
     "name": "Team Attention",
     "url": "https://github.com/team-attention"
   },
   "repository": "https://github.com/team-attention/plugins-for-claude-natives",
   "license": "MIT",
-  "keywords": ["claude-code", "plugin", "requirements", "clarification", "iterative-questioning"],
-  "skills": "./skills/clarify"
+  "keywords": ["claude-code", "plugin", "requirements", "clarification", "known-unknown", "strategy", "iterative-questioning"]
 }

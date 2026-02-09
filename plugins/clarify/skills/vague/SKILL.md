@@ -1,35 +1,32 @@
 ---
-name: clarify
-description: This skill should be used when the user asks to "clarify requirements", "refine requirements", "specify requirements", "what do I mean", "make this clearer", or when the user's request is ambiguous and needs iterative questioning to become actionable. Also trigger when user says "clarify", "/clarify", or mentions unclear/vague requirements.
+name: vague
+description: This skill should be used when the user asks to "clarify requirements", "refine requirements", "specify requirements", "what do I mean", "make this clearer", or when the user's request is ambiguous and needs iterative questioning to become actionable. Also trigger when user says "clarify", "/clarify", "ask me", or mentions unclear/vague requirements.
 ---
 
-# Clarify
+# Vague: Requirement Clarification
 
-Transform vague or ambiguous requirements into precise, actionable specifications through iterative questioning.
+Transform vague or ambiguous requirements into precise, actionable specifications through iterative questioning with AskUserQuestion.
 
-## Purpose
+## When to Use
 
-When requirements are unclear, incomplete, or open to multiple interpretations, use structured questioning to extract the user's true intent before any implementation begins.
+- Ambiguous feature requests ("add a login feature")
+- Incomplete bug reports ("the export is broken")
+- Underspecified tasks ("make the app faster")
+
+For strategy/planning blind spot analysis, use the **unknown** skill instead.
 
 ## Protocol
 
 ### Phase 1: Capture Original Requirement
 
-Record the original requirement exactly as stated:
-
-```markdown
-## Original Requirement
-"{user's original request verbatim}"
-```
-
-Identify ambiguities:
+Record the original requirement verbatim. Identify ambiguities:
 - What is unclear or underspecified?
 - What assumptions would need to be made?
 - What decisions are left to interpretation?
 
 ### Phase 2: Iterative Clarification
 
-Use AskUserQuestion tool to resolve each ambiguity. Continue until ALL aspects are clear.
+Use AskUserQuestion to resolve each ambiguity. Continue until ALL aspects are clear.
 
 **Question Design Principles:**
 - **Specific over general**: Ask about concrete details, not abstract preferences
@@ -37,30 +34,18 @@ Use AskUserQuestion tool to resolve each ambiguity. Continue until ALL aspects a
 - **One concern at a time**: Avoid bundling multiple questions
 - **Neutral framing**: Present options without bias
 
-**Loop Structure:**
+**Loop:**
 ```
 while ambiguities_remain:
     identify_most_critical_ambiguity()
-    ask_clarifying_question()  # Use AskUserQuestion tool
+    ask_clarifying_question()  # AskUserQuestion
     update_requirement_understanding()
     check_for_new_ambiguities()
 ```
 
-**AskUserQuestion Format:**
-```
-question: "What authentication method should be used?"
-options:
-  - label: "Username/Password"
-    description: "Traditional email/password login"
-  - label: "OAuth"
-    description: "Google, GitHub, etc. social login"
-  - label: "Magic Link"
-    description: "Passwordless email link"
-```
-
 ### Phase 3: Before/After Comparison
 
-After clarification is complete, present the transformation:
+Present the transformation:
 
 ```markdown
 ## Requirement Clarification Summary
@@ -69,40 +54,23 @@ After clarification is complete, present the transformation:
 "{original request verbatim}"
 
 ### After (Clarified)
-**Goal**: [precise description of what user wants]
-**Scope**: [what's included and excluded]
-**Constraints**: [limitations, requirements, preferences]
+**Goal**: [precise description]
+**Scope**: [included and excluded]
+**Constraints**: [limitations, preferences]
 **Success Criteria**: [how to know when done]
 
 **Decisions Made**:
 | Question | Decision |
 |----------|----------|
 | [ambiguity 1] | [chosen option] |
-| [ambiguity 2] | [chosen option] |
 ```
 
 ### Phase 4: Save Option
 
-Ask if the user wants to save the clarified requirement:
-
-```
-AskUserQuestion:
-question: "Save this requirement specification to a file?"
-options:
-  - label: "Yes, save to file"
-    description: "Save to requirements/ directory"
-  - label: "No, proceed"
-    description: "Continue without saving"
-```
-
-If saving:
-- Default location: `requirements/` or project-appropriate directory
-- Filename: descriptive, based on requirement topic (e.g., `auth-feature-requirements.md`)
-- Format: Markdown with Before/After structure
+Ask whether to save the clarified requirement to a file.
+Default location: `requirements/` or project-appropriate directory.
 
 ## Ambiguity Categories
-
-Common types to probe:
 
 | Category | Example Questions |
 |----------|------------------|
@@ -115,7 +83,7 @@ Common types to probe:
 
 ## Examples
 
-### Example 1: Vague Feature Request
+### Vague Feature Request
 
 **Original**: "Add a login feature"
 
@@ -131,7 +99,7 @@ Common types to probe:
 - Constraints: 24h session, bcrypt, rate limit 5 attempts
 - Success: User can register, login, logout, reset password
 
-### Example 2: Bug Report
+### Bug Report
 
 **Original**: "The export is broken"
 
@@ -151,6 +119,6 @@ Common types to probe:
 
 1. **No assumptions**: Ask, don't assume
 2. **Preserve intent**: Refine, don't redirect
-3. **Minimal questions**: Only what's needed
+3. **Minimal questions**: Only ask what's needed
 4. **Respect answers**: Accept user decisions
 5. **Track changes**: Always show before/after
