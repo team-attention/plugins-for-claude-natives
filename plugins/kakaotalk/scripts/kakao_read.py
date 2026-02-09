@@ -33,7 +33,10 @@ KAKAO_BUNDLE_ID = "com.kakao.KakaoTalkMac"
 CLAUDE_SIGNATURE = "sent with claude code"
 FILE_EXTENSIONS = ['.heic', '.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mov', '.pdf', '.zip']
 IGNORED_KEYWORDS = ['유효기간', '용량', 'KB', 'MB']
-TIME_PATTERNS = ['오전', '오후', '어제', '그제', '월', '일']
+TIME_PATTERNS = ['오전', '오후', '어제', '그제', '월', '일',
+                 'AM', 'PM', 'Yesterday', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', ':']
+MAIN_WINDOW_TITLES = ('카카오톡', 'KakaoTalk')
 
 
 # ============================================================================
@@ -72,7 +75,7 @@ def get_kakao_app():
 def find_main_window(kakao_app):
     """메인 창(카카오톡 채팅 목록 창) 찾기."""
     for win in kakao_app.windows():
-        if win.AXTitle == "카카오톡":
+        if win.AXTitle in MAIN_WINDOW_TITLES:
             return win
     return None
 
@@ -87,7 +90,7 @@ def find_open_chat(kakao_app, chat_name: str):
 
 
 def get_all_chat_windows(kakao_app) -> list:
-    return [win for win in kakao_app.windows() if win.AXTitle != "카카오톡"]
+    return [win for win in kakao_app.windows() if win.AXTitle not in MAIN_WINDOW_TITLES]
 
 
 def ensure_main_window_focused():
@@ -364,7 +367,7 @@ def list_chats(kakao_app, limit: int = 30) -> list[str]:
     chats = []
 
     for win in kakao_app.windows():
-        if safe_get_attr(win, 'AXTitle') != "카카오톡":
+        if safe_get_attr(win, 'AXTitle') not in MAIN_WINDOW_TITLES:
             continue
 
         for child in safe_get_attr(win, 'AXChildren', []):
@@ -405,7 +408,7 @@ def search_chats(query: str, limit: int = 20) -> list[str]:
     chats = []
 
     for win in kakao.windows():
-        if safe_get_attr(win, 'AXTitle') != "카카오톡":
+        if safe_get_attr(win, 'AXTitle') not in MAIN_WINDOW_TITLES:
             continue
 
         for child in safe_get_attr(win, 'AXChildren', []):
