@@ -1,97 +1,117 @@
 ---
 name: metamedium
-description: This skill should be used on EVERY task as a background lens. It distinguishes content (what) from form (how/medium) in any idea, strategy, product, or plan. Trigger always - apply the content/form distinction to surface whether the user is optimizing within an existing form or inventing a new one. Based on Alan Kay's metamedium concept and "a change of perspective is worth 80 IQ points."
+description: This skill should be used when the user is building, planning, or strategizing and the key question is whether to optimize content (what) or change form (how/medium). Trigger on "내용 vs 형식", "content vs form", "metamedium", "형식을 바꿔볼까", "새로운 포맷", "관점 전환", "perspective shift", "다른 방법 없을까", "같은 방식이 안 먹혀", "diminishing returns". Applies Alan Kay's metamedium concept to surface form-level alternatives. For requirement clarification use vague; for strategy blind spots use unknown.
 ---
 
 # Metamedium: Content vs Form Lens
 
-A persistent lens that distinguishes **content** (what is being said/built) from **form** (the medium/structure it's delivered through). Based on Alan Kay's insight that the computer is the first "metamedium" — capable of not just delivering content, but inventing entirely new forms of expression.
+Distinguish **content** (what is being said/built) from **form** (the medium/structure it's delivered through) to surface whether the real leverage is in optimizing content or inventing a new form. Based on Alan Kay's metamedium concept.
 
 > "A change of perspective is worth 80 IQ points." — Alan Kay
 
 ## Core Concept
 
-Most people only change **content** — what they say, write, or build. The real leverage comes from changing **form** — the medium, format, or structure itself. Coding gives the power to change form.
+Most people only change **content** — what they say, write, or build. The real leverage comes from changing **form** — the medium, format, or structure itself.
 
 | | Content (what) | Form (how/medium) |
 |--|----------------|-------------------|
-| Example | Writing a LinkedIn post | Building a tool that generates LinkedIn posts |
-| Example | Giving a workshop | Inventing a new workshop format |
-| Example | Answering a question | Creating a new way to frame questions |
-| Leverage | Linear — each piece of content is one output | Exponential — each new form enables infinite content |
+| Example | Writing a LinkedIn post | Building a tool that generates posts from client work |
+| Example | Writing unit tests manually | Building a test generator from type signatures |
+| Example | Giving a workshop | Inventing a format where attendees co-create artifacts |
+| Leverage | Linear — each piece is one output | Exponential — each new form enables infinite content |
 
-## The Metamedium Question
+## When to Use
 
-On every task, ask one question:
+- Planning a project and unsure whether to optimize the output or the process
+- Stuck optimizing content with diminishing returns
+- Building something and want to check if form-level change would yield more leverage
+- Evaluating whether "more of the same" or "something structurally different" is the right move
 
-> **"Is this content, or form? Could form be changed instead?"**
+For requirement clarification, use the **vague** skill. For strategy blind spot analysis, use the **unknown** skill.
 
-Three possible answers:
-1. **Content work** — Fine, proceed. But flag that form is unchanged.
-2. **Form work** — Good. This is where outsized leverage lives.
-3. **Didn't realize form could change** — This is the +80 IQ moment.
+## Protocol
 
-## How to Apply
+**ALWAYS use the AskUserQuestion tool** for the fork question in Phase 2 — never ask content/form choices in plain text.
 
-### Level 1: Labeling (Always)
+### Phase 1: Identify and Label
 
-Tag every piece of work:
+Read the user's current work, plan, or task. Classify each component as content or form:
 
 ```
 [CONTENT] Writing a blog post about AI consulting
-[FORM]    Building a tool that turns consulting retros into blog posts automatically
-[CONTENT] Hosting a meetup
-[FORM]    Designing a new meetup format where attendees co-create content
+[FORM]    Building a pipeline that turns consulting retros into blog posts
+[CONTENT] Deploying a new API endpoint
+[FORM]    Building a codegen that auto-generates endpoints from schemas
+[CONTENT] Fixing a flaky test
+[FORM]    Building a test infrastructure that prevents flaky tests by design
 ```
 
-### Level 2: The Fork Question (When Building)
+Present the labeling to the user as a brief diagnosis.
 
-Before creating anything, surface the fork:
+### Phase 2: Surface the Fork
+
+Use AskUserQuestion to present the content/form choice:
 
 ```
-AskUserQuestion:
-  question: "This looks like [content/form] work. Do you want to..."
-  options:
-    - "Proceed with content" — optimize within current form
-    - "Explore form change" — what if the medium/format itself changed?
-    - "Both" — content now, but note form opportunity for later
+questions:
+  - question: "This is currently [CONTENT/FORM]-level work. Where should effort go?"
+    header: "Level"
+    options:
+      - label: "Proceed with content"
+        description: "Optimize within the current form — faster, lower risk"
+      - label: "Explore form change"
+        description: "What if the medium/structure itself changed? Higher leverage"
+      - label: "Content now, note form"
+        description: "Do the content work, but flag the form opportunity for later"
+    multiSelect: false
 ```
 
-### Level 3: Invention Prompt (When Stuck or Strategizing)
+### Phase 3: Branch
 
-When optimizing content yields diminishing returns, prompt:
+**If "Proceed with content"**: Acknowledge and proceed. Include a `Form Opportunity` note in the output for future reference.
 
-> "What new form/medium could make this problem disappear?"
+**If "Explore form change"**: Generate 2-3 form alternatives. For each alternative:
+- What the new form looks like concretely
+- What new properties it would have (automatic, repeatable, scalable, composable)
+- Minimum viable version to test the form
+
+**If "Content now, note form"**: Proceed with content work. Append the form opportunity to the output.
+
+### Output
+
+Append to any deliverable or present standalone:
+
+```markdown
+## Content/Form Analysis
+
+**Current work**: [description]
+**Classification**: [CONTENT / FORM]
+
+### Form Opportunity
+| | Detail |
+|---|--------|
+| **Alternative form** | [what it would look like] |
+| **New properties** | [what it enables that current form doesn't] |
+| **Minimum test** | [smallest version to validate] |
+| **Status** | [exploring / noted for later / not applicable] |
+```
+
+## The Metamedium Question
+
+When stuck or when optimizing yields diminishing returns:
+
+> **"What new form/medium could make this problem disappear?"**
 
 Examples:
-- Stuck writing more posts? → Invent a format that turns client work into posts automatically
-- Meetup attendance plateauing? → Invent a format where missing the meetup still creates value
-- Workshop feedback generic? → Invent a format where participants produce artifacts, not just learn
+- Stuck writing more posts? → A format that turns client work into posts automatically
+- Test coverage plateauing? → A tool that generates tests from type signatures
+- Onboarding too slow? → A self-guided format where the codebase teaches itself
 
-## Alan Kay's Framework
-
-### Literacy = Read + Write
-
-| Literacy Level | Content | Form |
-|---------------|---------|------|
-| **Consumer** | Read posts | Use apps |
-| **Creator** | Write posts | — |
-| **Metamedium literate** | Write posts | Build the tool/format that enables new kinds of posts |
-
-Most people are "content literate." The metamedium lens pushes toward "form literate."
-
-### Tetris Test
+## Tetris Test
 
 > Change the blocks. Then you realize the original blocks were mathematically calculated.
 
-To truly understand a form, try to change it. The constraints you discover ARE the form's intelligence. This is how perspective shifts happen — not by thinking harder, but by touching the form itself.
-
-## Integration with Other Clarify Skills
-
-| Skill | What it does | Metamedium adds |
-|-------|-------------|-----------------|
-| **vague** | Clarifies requirements | "Are you specifying content requirements or form requirements?" |
-| **unknown** | Surfaces blind spots | "Is the unknown in your content strategy or in your form/medium choice?" |
+To truly understand a form, try to change it. The constraints discovered ARE the form's intelligence. Perspective shifts happen not by thinking harder, but by touching the form itself.
 
 ## Anti-Patterns
 
@@ -102,13 +122,12 @@ To truly understand a form, try to change it. The constraints you discover ARE t
 
 ## Rules
 
-1. **Always label**: Tag work as content or form, every time
+1. **Always label**: Tag work as content or form
 2. **Content is fine**: Not everything needs form change — but always note the option
 3. **Form yields power**: New form = new medium = exponential leverage
 4. **Code is metamedium**: The ability to code means the ability to change form
-5. **Touch to understand**: Change the form to discover why it was designed that way (Tetris test)
-6. **Membership value**: "Members-only perspective" = access to form-level insights, not just content
+5. **Touch to understand**: Change the form to discover why it was designed that way
 
 ## Additional Resources
 
-For Alan Kay's original ideas, see `references/alan-kay-quotes.md`.
+For Alan Kay's original ideas and source quotes, see `references/alan-kay-quotes.md`.

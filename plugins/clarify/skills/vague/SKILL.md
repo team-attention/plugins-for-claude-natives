@@ -1,11 +1,11 @@
 ---
 name: vague
-description: This skill should be used when the user asks to "clarify requirements", "refine requirements", "specify requirements", "what do I mean", "make this clearer", or when the user's request is ambiguous and needs iterative questioning to become actionable. Also trigger when user says "clarify", "/clarify", "ask me", or mentions unclear/vague requirements.
+description: This skill should be used when the user's request or requirement is ambiguous and needs iterative questioning to become actionable. Trigger on "clarify requirements", "refine requirements", "요구사항 명확히", "요구사항 정리", "뭘 원하는 건지", "make this clearer", "spec this out", "scope this", "/clarify". Turns vague inputs into concrete specs. For strategy blind spots use unknown; for content-vs-form reframing use metamedium.
 ---
 
 # Vague: Requirement Clarification
 
-Transform vague or ambiguous requirements into precise, actionable specifications through iterative questioning with AskUserQuestion.
+Transform vague or ambiguous requirements into precise, actionable specifications through hypothesis-driven questioning. **ALWAYS use the AskUserQuestion tool** — never ask clarifying questions in plain text.
 
 ## When to Use
 
@@ -13,11 +13,20 @@ Transform vague or ambiguous requirements into precise, actionable specification
 - Incomplete bug reports ("the export is broken")
 - Underspecified tasks ("make the app faster")
 
-For strategy/planning blind spot analysis, use the **unknown** skill instead.
+For strategy/planning blind spot analysis, use the **unknown** skill. For content-vs-form reframing, use the **metamedium** skill.
+
+## Core Principle: Hypotheses as Options
+
+Present plausible interpretations as options instead of asking open questions. Each option is a testable hypothesis about what the user actually means.
+
+```
+BAD:  "What kind of login do you want?"           ← open question, high cognitive load
+GOOD: "OAuth / Email+Password / SSO / Magic link" ← pick one, lower load
+```
 
 ## Protocol
 
-### Phase 1: Capture Original Requirement
+### Phase 1: Capture and Diagnose
 
 Record the original requirement verbatim. Identify ambiguities:
 - What is unclear or underspecified?
@@ -26,24 +35,34 @@ Record the original requirement verbatim. Identify ambiguities:
 
 ### Phase 2: Iterative Clarification
 
-Use AskUserQuestion to resolve each ambiguity. Continue until ALL aspects are clear.
+Use AskUserQuestion to resolve ambiguities. **Batch up to 4 related questions per call.** Each option is a hypothesis about what the user means.
 
-**Question Design Principles:**
-- **Specific over general**: Ask about concrete details, not abstract preferences
-- **Options over open-ended**: Provide 2-4 choices (recognition > recall)
-- **One concern at a time**: Avoid bundling multiple questions
-- **Neutral framing**: Present options without bias
+**Cap: 5-8 total questions.** Stop when all critical ambiguities are resolved, OR user indicates "good enough", OR cap reached.
 
-**Loop:**
+**Example AskUserQuestion call:**
 ```
-while ambiguities_remain:
-    identify_most_critical_ambiguity()
-    ask_clarifying_question()  # AskUserQuestion
-    update_requirement_understanding()
-    check_for_new_ambiguities()
+questions:
+  - question: "Which authentication method should the login use?"
+    header: "Auth method"
+    options:
+      - label: "Email + Password"
+        description: "Traditional signup with email verification"
+      - label: "OAuth (Google/GitHub)"
+        description: "Delegated auth, no password management needed"
+      - label: "Magic link"
+        description: "Passwordless email-based login"
+    multiSelect: false
+  - question: "What should happen after registration?"
+    header: "Post-signup"
+    options:
+      - label: "Immediate access"
+        description: "User can use the app right away"
+      - label: "Email verification first"
+        description: "Must confirm email before access"
+    multiSelect: false
 ```
 
-### Phase 3: Before/After Comparison
+### Phase 3: Before/After Summary
 
 Present the transformation:
 
@@ -67,58 +86,24 @@ Present the transformation:
 
 ### Phase 4: Save Option
 
-Ask whether to save the clarified requirement to a file.
-Default location: `requirements/` or project-appropriate directory.
+Ask whether to save the clarified requirement to a file. Default location: `requirements/` or project-appropriate directory.
 
 ## Ambiguity Categories
 
-| Category | Example Questions |
-|----------|------------------|
-| **Scope** | What's included? What's explicitly out? |
-| **Behavior** | Edge cases? Error scenarios? |
-| **Interface** | Who/what interacts? How? |
-| **Data** | Inputs? Outputs? Format? |
-| **Constraints** | Performance? Compatibility? |
-| **Priority** | Must-have vs nice-to-have? |
-
-## Examples
-
-### Vague Feature Request
-
-**Original**: "Add a login feature"
-
-**Clarifying questions (via AskUserQuestion)**:
-1. Authentication method? → Username/Password
-2. Registration included? → Yes, self-signup
-3. Session duration? → 24 hours
-4. Password requirements? → Min 8 chars, mixed case
-
-**Clarified**:
-- Goal: Add username/password login with self-registration
-- Scope: Login, logout, registration, password reset
-- Constraints: 24h session, bcrypt, rate limit 5 attempts
-- Success: User can register, login, logout, reset password
-
-### Bug Report
-
-**Original**: "The export is broken"
-
-**Clarifying questions**:
-1. Which export? → CSV
-2. What happens? → Empty file
-3. When did it start? → After v2.1 update
-4. Steps to reproduce? → Export any report
-
-**Clarified**:
-- Goal: Fix CSV export producing empty files
-- Scope: CSV only, other formats work
-- Constraint: Regression from v2.1
-- Success: CSV contains correct data matching UI
+| Category | Example Hypotheses |
+|----------|-------------------|
+| **Scope** | All users / Admins only / Specific roles |
+| **Behavior** | Fail silently / Show error / Auto-retry |
+| **Interface** | REST API / GraphQL / CLI |
+| **Data** | JSON / CSV / Both |
+| **Constraints** | <100ms / <1s / No requirement |
+| **Priority** | Must-have / Nice-to-have / Future |
 
 ## Rules
 
-1. **No assumptions**: Ask, don't assume
-2. **Preserve intent**: Refine, don't redirect
-3. **Minimal questions**: Only ask what's needed
-4. **Respect answers**: Accept user decisions
-5. **Track changes**: Always show before/after
+1. **Hypotheses, not open questions**: Every option is a plausible interpretation
+2. **No assumptions**: Ask, don't assume
+3. **Preserve intent**: Refine, don't redirect
+4. **5-8 questions max**: Beyond this is fatigue
+5. **Batch related questions**: Up to 4 per AskUserQuestion call
+6. **Track changes**: Always show before/after

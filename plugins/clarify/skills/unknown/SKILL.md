@@ -1,6 +1,6 @@
 ---
 name: unknown
-description: This skill should be used when the user asks to "clarify unknowns", "known unknown", "4분면 분석", "quadrant analysis", "blind spots", "what am I missing", "surface assumptions", "strategy check", "뭘 놓치고 있지", "전략 점검", "분석해봐", or provides a strategy/plan/decision document that needs structured analysis to surface hidden assumptions and blind spots.
+description: This skill should be used when the user provides a strategy, plan, or decision document and wants to surface hidden assumptions and blind spots using the Known/Unknown 4-quadrant framework. Trigger on "known unknown", "4분면 분석", "blind spots", "뭘 놓치고 있지", "뭘 모르는지 모르겠어", "전략 점검", "전략 분석", "assumption check", "가정 점검", "quadrant analysis", "what am I missing". Strategy-level blind spot analysis with hypothesis-driven questioning. For requirement clarification use vague; for content-vs-form reframing use metamedium.
 ---
 
 # Unknown: Surface Blind Spots with Known/Unknown Quadrants
@@ -13,11 +13,13 @@ Surface hidden assumptions and blind spots in any strategy, plan, or decision us
 - Decisions with unclear direction or hidden assumptions
 - Any situation where "what we don't know" matters more than "what we do know"
 
-For specific requirement clarification (feature requests, bug reports), use the **vague** skill instead.
+For specific requirement clarification (feature requests, bug reports), use the **vague** skill. For content-vs-form reframing (optimizing within a form vs inventing a new form), use the **metamedium** skill.
 
 ## Core Principle: Hypothesis-as-Options
 
-Present hypotheses as options instead of open questions. This reduces cognitive load and frames the user's thinking.
+**ALWAYS use the AskUserQuestion tool** for every question in R1/R2/R3 — never ask questions in plain text. The structured format enforces hypothesis-as-options and limits choice fatigue.
+
+Present hypotheses as options instead of open questions. The hypotheses ARE the analysis — by designing good options, 80% of the analytical work is done before the user even answers. The user's job is to confirm, correct, or surprise.
 
 ```
 BAD:  "Why can't you do video content?"           ← open question, high load
@@ -44,17 +46,23 @@ GOOD: "Time / Skill gap / No guests / High bar"   ← pick one or more
 
 **File provided**: Read and extract goals, components, implicit assumptions, missing elements.
 
-**Topic keyword only**: Start directly with R1 questions to establish scope.
+**Topic keyword only**: Start directly with R1 questions to establish scope. The draft in Phase 3 will be rougher but R1 corrects it.
 
 ### Phase 2: Context
 
-Gather related context beyond the input: nearby files, decision records, project status, external data if needed.
+Gather related context to find Unknown Knowns — assets the user may not realize they have:
+
+- **Glob** for related files: CLAUDE.md, README, decision records, past analyses in the project
+- **Read** project context: recent goals, team structure, active initiatives
+- **Identify** underutilized assets: existing tools/skills not in use, past projects with reusable patterns, team expertise not leveraged
+
+Items discovered here become UK candidates and options in R1 questions.
 
 ### Phase 3: Draft + R1 Questions
 
-Generate an initial 4-quadrant classification, then design R1 questions to test boundaries.
+Generate an initial 4-quadrant classification. **The draft is intentionally rough** — R1 exists to correct it, not confirm it. Err on the side of classifying uncertain items as KU rather than KK.
 
-**R1 question design** — target each quadrant boundary:
+Design R1 questions to test quadrant boundaries. **Batch all R1 questions into a single AskUserQuestion call** (max 4 questions):
 
 | Target | Pattern | Example |
 |--------|---------|---------|
@@ -95,6 +103,8 @@ Generate a structured 4-quadrant playbook file. For the complete output template
 ## Core Principles (3-5 decision criteria)
 ```
 
+**Resource percentages (60/25/10/5) are defaults.** Adjust based on context — e.g., a startup exploring product-market fit may allocate 40% KU and 30% KK.
+
 ## Anti-Patterns
 
 - Open questions ("What would you like to do?") — use hypothesis options
@@ -123,6 +133,7 @@ Generate a structured 4-quadrant playbook file. For the complete output template
 4. **Stop > Start**: Always include "what to stop doing"
 5. **Promote or kill**: Every KU gets a promotion condition and a kill condition
 6. **Raw > Perfect**: Encourage minimum viable experiments, not perfect plans
+7. **Draft is disposable**: The initial quadrant is meant to be corrected
 
 ## Additional Resources
 

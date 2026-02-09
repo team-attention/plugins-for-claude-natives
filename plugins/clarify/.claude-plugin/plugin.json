@@ -1,12 +1,12 @@
 {
   "name": "clarify",
   "version": "2.0.0",
-  "description": "Clarify the unclear: vague requirements (vague) and strategy blind spots (unknown)",
+  "description": "Three lenses for clarity: vague requirements → specs (vague), strategy blind spots → 4-quadrant playbook (unknown), content vs form → leverage shift (metamedium)",
   "author": {
     "name": "Team Attention",
     "url": "https://github.com/team-attention"
   },
   "repository": "https://github.com/team-attention/plugins-for-claude-natives",
   "license": "MIT",
-  "keywords": ["claude-code", "plugin", "requirements", "clarification", "known-unknown", "strategy", "iterative-questioning"]
+  "keywords": ["claude-code", "plugin", "requirements", "clarification", "known-unknown", "strategy", "metamedium", "content-form"]
 }
