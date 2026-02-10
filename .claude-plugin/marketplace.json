@@ -60,6 +60,11 @@
       "name": "gmail",
       "description": "Multi-account Gmail integration - read, search, send, and manage emails with 5-step sending workflow",
       "source": "./plugins/gmail"
+    },
+    {
+      "name": "cowork-supervisor",
+      "description": "Strategic orchestrator for multi-plugin coordination. Clarifies intent, discovers capabilities, plans execution, orchestrates plugins, and aggregates results",
+      "source": "./plugins/cowork-supervisor"
     }
   ]
 }

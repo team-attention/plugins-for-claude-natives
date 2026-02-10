@@ -1,0 +1,30 @@
+{
+  "name": "cowork-supervisor",
+  "version": "1.0.0",
+  "description": "Strategic orchestrator for multi-plugin coordination. Clarifies user intent, discovers plugin capabilities, creates execution plans, orchestrates plugins, and aggregates results.",
+  "author": {
+    "name": "Team Attention",
+    "url": "https://github.com/team-attention"
+  },
+  "homepage": "https://github.com/team-attention/cowork-supervisor",
+  "repository": "https://github.com/team-attention/cowork-supervisor",
+  "license": "MIT",
+  "keywords": [
+    "supervisor",
+    "orchestrator",
+    "multi-plugin",
+    "coordination",
+    "claude-code",
+    "plugin"
+  ],
+  "agents": [
+    "./agents/supervisor.md",
+    "./agents/intent-clarifier.md",
+    "./agents/capability-discoverer.md",
+    "./agents/supervisor-planner.md",
+    "./agents/orchestra.md",
+    "./agents/aggregator.md"
+  ],
+  "skills": ["./skills/"],
+  "commands": ["./commands/"]
+}
