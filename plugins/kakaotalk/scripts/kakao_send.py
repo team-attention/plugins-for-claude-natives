@@ -23,6 +23,7 @@ except ImportError:
     sys.exit(1)
 
 KAKAO_BUNDLE_ID = "com.kakao.KakaoTalkMac"
+MAIN_WINDOW_TITLES = ("카카오톡", "KakaoTalk")
 
 
 def run_applescript(script: str) -> str:
@@ -59,7 +60,7 @@ def get_kakao_app():
 def find_main_window(kakao_app):
     """메인 창(카카오톡 채팅 목록 창) 찾기."""
     for win in kakao_app.windows():
-        if win.AXTitle == "카카오톡":
+        if win.AXTitle in MAIN_WINDOW_TITLES:
             return win
     return None
 
@@ -80,7 +81,7 @@ def find_open_chat(kakao_app, chat_name: str):
     """이미 열린 채팅방 창에서 이름이 일치하는 것 찾기."""
     for win in kakao_app.windows():
         title = win.AXTitle
-        if title == "카카오톡":
+        if title in MAIN_WINDOW_TITLES:
             continue
         if chat_name.lower() in title.lower():
             return win
@@ -88,7 +89,7 @@ def find_open_chat(kakao_app, chat_name: str):
 
 
 def get_all_chat_windows(kakao_app) -> list:
-    return [win for win in kakao_app.windows() if win.AXTitle != "카카오톡"]
+    return [win for win in kakao_app.windows() if win.AXTitle not in MAIN_WINDOW_TITLES]
 
 
 def search_and_open_chat(chat_name: str):
