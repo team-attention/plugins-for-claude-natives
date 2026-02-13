@@ -10,7 +10,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
   - [agent-council](#agent-council) - Get consensus from multiple AI models
   - [clarify](#clarify) - Transform vague requirements into specs
   - [dev](#dev) - Community scanning + technical decision-making
-  - [doubt](#doubt) - Force Claude to re-validate responses
+  - [persist](#persist) - DoD loop + re-validate responses
   - [interactive-review](#interactive-review) - Review plans with a web UI
   - [say-summary](#say-summary) - Hear responses via text-to-speech
   - [youtube-digest](#youtube-digest) - Summarize and quiz on YouTube videos
@@ -41,7 +41,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
 | [agent-council](./plugins/agent-council/) | Collect and synthesize opinions from multiple AI agents (Gemini, GPT, Codex) |
 | [clarify](./plugins/clarify/) | Transform vague requirements into precise specifications through iterative questioning |
 | [dev](./plugins/dev/) | Developer workflow: community opinion scanning and technical decision analysis |
-| [doubt](./plugins/doubt/) | Force Claude to re-validate its response when `!rv` is in your prompt |
+| [persist](./plugins/persist/) | Persistence toolkit: DoD loop (`!rph`) + re-validate (`!rv` / `!rv2` / `!rv3`) |
 | [interactive-review](./plugins/interactive-review/) | Interactive markdown review with web UI for visual plan/document approval |
 | [say-summary](./plugins/say-summary/) | Speaks a short summary of Claude's response using macOS TTS (Korean/English) |
 | [youtube-digest](./plugins/youtube-digest/) | Summarize YouTube videos with transcript, insights, Korean translation, and quizzes |
@@ -156,29 +156,42 @@ User: "Monolith vs microservices for our scale?"
 
 ---
 
-### doubt
+### persist
 
-**Force Claude to double-check its response before delivering.**
+**Persistence toolkit for improving AI response reliability.**
 
-When you include `!rv` anywhere in your prompt, Claude will pause before responding, re-validate its answer against potential errors, and only then deliver the response. Perfect for critical decisions or when you want extra confidence.
+Two tools to ensure Claude's responses are thoroughly verified before delivery.
 
-**Trigger:**
-- Include `!rv` anywhere in your prompt
+#### Re-Validate (`!rv`)
 
-**How it works:**
-1. `UserPromptSubmit` hook detects `!rv` keyword and sets a flag
-2. `Stop` hook intercepts Claude's response before delivery
-3. Claude re-validates the response for errors, hallucinations, or questionable claims
-4. Only after verification does Claude deliver the final answer
-
-**Why `!rv` instead of `!doubt`?**
-The word "doubt" affects Claude's behavior - it starts doubting from the beginning. `!rv` (re-validate) is neutral.
+Include `!rv` in your prompt to force re-validation. Supports multiple rounds.
 
 ```bash
-# Example
-User: "What's the time complexity of binary search? !rv"
-# Claude will verify its answer before responding
+Analyze this code !rv       # 1 round of re-validation
+Analyze this code !rv2      # 2 rounds
+Analyze this code !rv3      # 3 rounds
 ```
+
+#### Ralph Loop (`!rph`)
+
+DoD (Definition of Done) based iterative verification. Claude keeps working until all criteria are met.
+
+```bash
+Write a fibonacci function !rph
+```
+
+**How `!rph` works:**
+1. `!rph` detected → state file created
+2. Claude asks you for Definition of Done criteria
+3. Criteria saved as `- [ ]` markdown checklist
+4. Task executed, completed items updated to `- [x]`
+5. Stop hook verifies → blocks if unchecked items remain
+6. All items `- [x]` → clean exit
+
+**Safety:** Force-stops after 10 iterations to prevent infinite loops.
+
+**Why `!rv` instead of `!doubt`?**
+The word "doubt" affects Claude's behavior - it starts doubting from the beginning. `!rv` (re-validate) is neutral, so Claude works normally first, then verifies at the end.
 
 ---
 

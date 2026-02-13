@@ -1,9 +1,0 @@
-{
-  "name": "doubt",
-  "version": "1.0.0",
-  "description": "Force Claude to re-validate when you have doubts (!doubt)",
-  "author": {
-    "name": "team-attention"
-  },
-  "keywords": ["validation", "hallucination", "trust", "verification", "doubt"]
-}

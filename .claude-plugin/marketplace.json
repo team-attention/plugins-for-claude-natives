@@ -52,9 +52,9 @@
       "source": "./plugins/kakaotalk"
     },
     {
-      "name": "doubt",
-      "description": "Force Claude to re-validate when you have doubts (!doubt)",
-      "source": "./plugins/doubt"
+      "name": "persist",
+      "description": "Persistence toolkit - DoD loop (!rph) + Re-validate (!rv)",
+      "source": "./plugins/persist"
     }
   ]
 }

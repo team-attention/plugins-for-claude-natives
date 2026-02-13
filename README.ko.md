@@ -10,6 +10,7 @@ Claude Code의 기능을 확장하고 싶은 파워 유저를 위한 플러그�
   - [agent-council](#agent-council) - 여러 AI 모델의 의견 종합
   - [clarify](#clarify) - 모호한 요구사항을 명세로 변환
   - [dev](#dev) - 커뮤니티 스캔 + 기술 의사결정
+  - [persist](#persist) - DoD 루프 + 응답 재검증
   - [interactive-review](#interactive-review) - 웹 UI로 계획 검토
   - [say-summary](#say-summary) - 응답을 음성으로 듣기
   - [youtube-digest](#youtube-digest) - YouTube 영상 요약 및 퀴즈
@@ -40,6 +41,7 @@ Claude Code의 기능을 확장하고 싶은 파워 유저를 위한 플러그�
 | [agent-council](./plugins/agent-council/) | 여러 AI 에이전트(Gemini, GPT, Codex)의 의견을 수집하고 종합 | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_claude-code%EA%B0%80-codex-gemini-cli-%EA%B3%BC-%ED%9A%8C%EC%9D%98%ED%95%B4%EC%84%9C-%EA%B2%B0%EB%A1%A0%EC%9D%84-activity-7406083077258665984-L_fD) |
 | [clarify](./plugins/clarify/) | 반복적인 질문을 통해 모호한 요구사항을 정확한 명세로 변환 | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_%ED%81%B4%EB%A1%9C%EB%93%9C%EC%BD%94%EB%93%9C%EA%B0%80-%EA%B0%9D%EA%B4%80%EC%8B%9D%EC%9C%BC%EB%A1%9C-%EC%A7%88%EB%AC%B8%ED%95%98%EA%B2%8C-%ED%95%98%EB%8A%94-skills%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%B4%EB%B3%B4%EC%84%B8%EC%9A%94-clarify-activity-7413349697022570496-qLts) |
 | [dev](./plugins/dev/) | 커뮤니티 의견 스캔 + 기술 의사결정 분석 | |
+| [persist](./plugins/persist/) | 응답 신뢰성 도구: DoD 루프 (`!rph`) + 재검증 (`!rv` / `!rv2` / `!rv3`) | |
 | [interactive-review](./plugins/interactive-review/) | 웹 UI를 통한 인터랙티브 마크다운 리뷰 | [LinkedIn](https://www.linkedin.com/posts/hoyeonleekr_claude-code%EA%B0%80-%EC%9E%91%EC%84%B1%ED%95%9C-%EA%B3%84%ED%9A%8D%EC%9D%B4%EB%82%98-%EA%B8%B4-%EB%AC%B8%EC%84%9C%EC%97%90-%EB%8C%80%ED%95%9C-%EC%96%B4%EB%96%BB%EA%B2%8C-%ED%94%BC%EB%93%9C%EB%B0%B1-%EC%A3%BC%EC%84%B8%EC%9A%94-activity-7412613598516051968-ujHp) |
 | [say-summary](./plugins/say-summary/) | Claude 응답을 macOS TTS로 요약해서 읽어줌 (한국어/영어) | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_claude-code%EC%9D%98-%EC%9D%91%EB%8B%B5%EC%9D%84-%EC%9A%94%EC%95%BD%ED%95%B4%EC%84%9C-%EC%9D%8C%EC%84%B1%EC%9C%BC%EB%A1%9C-%EB%93%A4%EC%9D%84-%EC%88%98-%EC%9E%88%EB%8A%94-hooks-activity-7412609821390249984-ekCd) |
 | [youtube-digest](./plugins/youtube-digest/) | YouTube 영상 요약, 인사이트, 한글 번역, 퀴즈 제공 | [LinkedIn](https://www.linkedin.com/posts/gb-jeong_84%EB%B6%84%EC%A7%9C%EB%A6%AC-%EC%98%81%EC%96%B4-%ED%8C%9F%EC%BA%90%EC%8A%A4%ED%8A%B8%EB%A5%BC-5%EB%B6%84-%EB%A7%8C%EC%97%90-%ED%95%B5%EC%8B%AC-%ED%8C%8C%EC%95%85%ED%95%98%EA%B3%A0-%ED%80%B4%EC%A6%88%EA%B9%8C%EC%A7%80-%ED%92%80%EA%B3%A0-%EC%A7%81%EC%A0%91-activity-7414055598754848768-c0oy) |
@@ -149,6 +151,42 @@ User: "React vs Vue 뭐가 나을까?"
 User: "상태관리 라이브러리 뭐 쓸지 고민이야"
 User: "모놀리스 vs 마이크로서비스 어떻게 해야 할까?"
 ```
+
+---
+
+### persist
+
+**AI 응답의 신뢰성을 높이는 persistence 도구 모음.**
+
+#### Re-Validate (`!rv`)
+
+프롬프트에 `!rv`를 포함하면 응답 완료 시 강제 재검증합니다. 횟수 지정 가능.
+
+```
+이 코드 분석해줘 !rv       # 1회 재검증
+이 코드 분석해줘 !rv2      # 2회 재검증
+이 코드 분석해줘 !rv3      # 3회 재검증
+```
+
+#### Ralph Loop (`!rph`)
+
+DoD(Definition of Done) 기반 반복 검증 루프. 모든 완료 기준을 충족할 때까지 자동 재시도합니다.
+
+```
+피보나치 함수 만들어줘 !rph
+```
+
+**동작 방식:**
+1. `!rph` 감지 → state 파일 생성
+2. Claude가 완료 기준(DoD) 질문
+3. `- [ ]` 마크다운 체크리스트로 저장
+4. 태스크 실행, 완료 항목 `- [x]`로 업데이트
+5. Stop hook 검증 → 미체크 항목 있으면 block
+6. 모든 항목 `- [x]`이면 정상 종료
+
+**안전장치:** 최대 10회 반복 초과 시 강제 종료.
+
+**왜 `!rv`인가?** `doubt` 같은 키워드는 Claude의 행동에 영향을 줍니다. `!rv`(re-validate)는 중립적이라 Claude가 먼저 정상적으로 작업한 뒤 마지막에 검증합니다.
 
 ---
 
