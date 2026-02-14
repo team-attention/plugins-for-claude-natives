@@ -3,9 +3,10 @@
   "description": "Interactive markdown review with web UI - review plans and documents with checkbox approvals and inline comments",
   "version": "1.0.4",
   "author": {
-    "name": "Team Attention"
+    "name": "Team Attention",
+    "url": "https://github.com/team-attention"
   },
   "license": "MIT",
   "keywords": ["review", "markdown", "interactive", "web-ui", "feedback"],
-  "repository": "https://github.com/team-attention/agents"
+  "repository": "https://github.com/team-attention/plugins-for-claude-natives"
 }

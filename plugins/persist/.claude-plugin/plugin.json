@@ -3,7 +3,10 @@
   "version": "1.1.0",
   "description": "Persistence toolkit - DoD loop (!rph) + Re-validate (!rv)",
   "author": {
-    "name": "team-attention"
+    "name": "Team Attention",
+    "url": "https://github.com/team-attention"
   },
+  "repository": "https://github.com/team-attention/plugins-for-claude-natives",
+  "license": "MIT",
   "keywords": ["ralph", "loop", "persistence", "dod", "verification", "iteration", "revalidate", "doubt"]
 }

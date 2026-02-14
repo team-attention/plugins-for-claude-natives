@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "agent-council",
-      "description": "Collect and synthesize opinions from multiple AI agents (Gemini, GPT, Codex)",
+      "description": "Collect and synthesize opinions from multiple AI agents (Codex, Gemini, ...)",
       "source": "./plugins/agent-council"
     },
     {

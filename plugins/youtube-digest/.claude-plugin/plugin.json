@@ -5,5 +5,8 @@
   "author": {
     "name": "Team Attention",
     "url": "https://github.com/team-attention"
-  }
+  },
+  "repository": "https://github.com/team-attention/plugins-for-claude-natives",
+  "license": "MIT",
+  "keywords": ["youtube", "transcript", "summary", "digest", "translation"]
 }

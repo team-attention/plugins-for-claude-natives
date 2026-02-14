@@ -1,5 +1,12 @@
 {
   "name": "google-calendar",
   "version": "1.0.0",
-  "description": "Multi-account Google Calendar integration with parallel querying and conflict detection"
+  "description": "Multi-account Google Calendar integration with parallel querying and conflict detection",
+  "author": {
+    "name": "Team Attention",
+    "url": "https://github.com/team-attention"
+  },
+  "repository": "https://github.com/team-attention/plugins-for-claude-natives",
+  "license": "MIT",
+  "keywords": ["google-calendar", "scheduling", "multi-account", "macos"]
 }
