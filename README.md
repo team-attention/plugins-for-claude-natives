@@ -18,6 +18,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
   - [google-calendar](#google-calendar) - Multi-account calendar integration
   - [kakaotalk](#kakaotalk) - Send/read KakaoTalk messages on macOS
   - [session-wrap](#session-wrap) - Session wrap-up + history analysis toolkit
+  - [team-assemble](#team-assemble) - Dynamic agent team orchestration
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -50,6 +51,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
 | [google-calendar](./plugins/google-calendar/) | Multi-account Google Calendar integration with parallel querying and conflict detection |
 | [kakaotalk](./plugins/kakaotalk/) | Send and read KakaoTalk messages on macOS using Accessibility API |
 | [session-wrap](./plugins/session-wrap/) | Session wrap-up, history analysis, and session validation toolkit |
+| [team-assemble](./plugins/team-assemble/) | Dynamically assemble expert agent teams for complex tasks using Claude Code's agent teams feature |
 
 ## Plugin Details
 
@@ -406,6 +408,44 @@ Phase 2: Validation         ▼
 - Create clear handoff points for future sessions
 - Analyze past sessions for recurring patterns
 - Validate skill implementations against specifications
+
+---
+
+### team-assemble
+
+**Dynamically assemble expert agent teams for complex tasks.**
+
+Instead of manually designing agents, this plugin analyzes your task, scouts the codebase, and assembles an optimal team with the right roles, dependencies, and validation criteria — all using Claude Code's agent teams feature.
+
+> **Prerequisite:** Agent teams must be enabled. See [setup guide](./plugins/team-assemble/skills/team-assemble/references/enable-agent-teams.md).
+
+**Trigger phrases:**
+- "assemble a team to..."
+- "team assemble"
+- "use a team for..."
+
+**6-Phase Workflow:**
+
+```
+Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6
+Task       Codebase   Integrate  Execute   Validate   Complete
+Analysis   Scouts     & Confirm                       & Cleanup
+```
+
+**Key features:**
+- **Dynamic agent design** — scouts your codebase and proposes agents tailored to the task (no fixed catalog)
+- **Model 3-tier** — opus for strategy, sonnet for execution, haiku for research
+- **Parallel execution** — independent agents run simultaneously
+- **Acceptance criteria** — every team has measurable validation criteria
+- **Verify/fix loop** — QA validates, support fixes (max 3 rounds)
+- **Two approval gates** — confirm scope (Phase 1) and team composition (Phase 3)
+
+```bash
+# Examples
+User: "Assemble a team to refactor authentication from session-based to JWT"
+User: "Use a team to evaluate Redis vs Memcached vs in-memory caching"
+User: "Team assemble — extract shared utils from three microservices into a common lib"
+```
 
 ---
 
