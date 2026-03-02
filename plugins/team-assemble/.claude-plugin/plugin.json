@@ -1,0 +1,12 @@
+{
+  "name": "team-assemble",
+  "version": "1.0.0",
+  "description": "Dynamically assemble expert agent teams for complex tasks using Claude Code's agent teams feature",
+  "author": {
+    "name": "Team Attention",
+    "url": "https://github.com/team-attention"
+  },
+  "repository": "https://github.com/team-attention/plugins-for-claude-natives",
+  "license": "MIT",
+  "keywords": ["agent-teams", "multi-agent", "team", "parallel", "orchestration", "task-decomposition"]
+}
