@@ -1,0 +1,12 @@
+{
+  "name": "podcast",
+  "version": "1.0.0",
+  "description": "Generate Korean podcast episodes from any source (URLs, tweets, articles, PDFs) with OpenAI TTS and auto-upload to YouTube",
+  "author": {
+    "name": "Team Attention",
+    "url": "https://github.com/team-attention"
+  },
+  "repository": "https://github.com/team-attention/plugins-for-claude-natives",
+  "license": "MIT",
+  "keywords": ["claude-code", "plugin", "podcast", "tts", "openai", "youtube", "korean", "audio"]
+}

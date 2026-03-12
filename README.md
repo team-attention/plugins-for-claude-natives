@@ -19,6 +19,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
   - [kakaotalk](#kakaotalk) - Send/read KakaoTalk messages on macOS
   - [session-wrap](#session-wrap) - Session wrap-up + history analysis toolkit
   - [team-assemble](#team-assemble) - Dynamic agent team orchestration
+  - [podcast](#podcast) - Source-to-YouTube Korean podcast generator
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -52,6 +53,7 @@ A collection of Claude Code plugins for power users who want to extend Claude Co
 | [kakaotalk](./plugins/kakaotalk/) | Send and read KakaoTalk messages on macOS using Accessibility API |
 | [session-wrap](./plugins/session-wrap/) | Session wrap-up, history analysis, and session validation toolkit |
 | [team-assemble](./plugins/team-assemble/) | Dynamically assemble expert agent teams for complex tasks using Claude Code's agent teams feature |
+| [podcast](./plugins/podcast/) | Generate Korean podcast episodes from any source with OpenAI TTS and YouTube auto-upload |
 
 ## Plugin Details
 
@@ -445,6 +447,51 @@ Analysis   Scouts     & Confirm                       & Cleanup
 User: "Assemble a team to refactor authentication from session-based to JWT"
 User: "Use a team to evaluate Redis vs Memcached vs in-memory caching"
 User: "Team assemble — extract shared utils from three microservices into a common lib"
+```
+
+---
+
+### podcast
+
+**Turn any source into a Korean podcast episode, automatically uploaded to YouTube.**
+
+Drop URLs, tweets, articles, or PDFs and this plugin will analyze them, write a conversational Korean script, generate audio using OpenAI's `gpt-4o-mini-tts`, and upload the result to YouTube — all in one go.
+
+**Trigger phrases:**
+- "make a podcast from this"
+- "팟캐스트 만들어"
+- "turn this into an episode"
+- "이 글을 팟캐스트로"
+
+**The pipeline:**
+
+```
+Sources → Parallel Analysis → Script Writing → TTS (OpenAI) → MP4 → YouTube Upload
+```
+
+**What you get:**
+1. **Script** - 8-12 min Korean podcast script with opening, analysis, fusion, and closing
+2. **Audio** - MP3 generated via OpenAI gpt-4o-mini-tts with natural Korean voice
+3. **Video** - MP4 with dark title card (1920x1080)
+4. **YouTube** - Auto-uploaded as unlisted with metadata
+
+**Partial execution supported:**
+- "Just write the script" → Script only
+- "Generate TTS from this script" → Audio only
+- "Upload to YouTube" → Upload existing MP4
+
+**Requirements:**
+- ffmpeg (for audio merging and MP4 conversion)
+- OpenAI API key (`OPENAI_API_KEY` env var)
+- Google OAuth client secret (for YouTube upload)
+
+```bash
+# Example
+User: "이 두 개의 아티클로 팟캐스트 만들어줘"
+# → Analyzes both articles in parallel
+# → Writes fusion script
+# → Generates audio
+# → Uploads to YouTube
 ```
 
 ---

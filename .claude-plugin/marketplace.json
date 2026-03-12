@@ -65,6 +65,11 @@
       "name": "team-assemble",
       "description": "Dynamically assemble expert agent teams for complex tasks using Claude Code's agent teams feature",
       "source": "./plugins/team-assemble"
+    },
+    {
+      "name": "podcast",
+      "description": "Generate Korean podcast episodes from any source (URLs, tweets, articles) with OpenAI TTS and YouTube auto-upload",
+      "source": "./plugins/podcast"
     }
   ]
 }
