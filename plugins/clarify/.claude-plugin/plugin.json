@@ -8,5 +8,6 @@
   },
   "repository": "https://github.com/team-attention/plugins-for-claude-natives",
   "license": "MIT",
-  "keywords": ["claude-code", "plugin", "requirements", "clarification", "known-unknown", "strategy", "metamedium", "content-form"]
+  "keywords": ["claude-code", "plugin", "requirements", "clarification", "known-unknown", "strategy", "metamedium", "content-form"],
+  "skills": "./skills/"
 }
