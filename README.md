@@ -496,6 +496,16 @@ User: "이 두 개의 아티클로 팟캐스트 만들어줘"
 
 ---
 
+## Community Tools
+
+Other useful tools for Claude Code power users:
+
+| Tool | Description |
+|------|-------------|
+| [claude-dash](https://github.com/krabat-l/claude-dash) | Real-time statusline for Claude Code showing context, cost, quota, cache, tools, and git status |
+
+---
+
 ## Contributing
 
 Contributions welcome! Please open an issue or PR.
