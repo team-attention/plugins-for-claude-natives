@@ -14,6 +14,10 @@ if [ -z "$session_id" ]; then
     session_id="unknown"
 fi
 
+# Strip any characters that could traverse the state directory
+session_id=$(echo "$session_id" | tr -cd '[:alnum:]-_')
+[ -z "$session_id" ] && session_id="unknown"
+
 STATE_FILE="$STATE_DIR/doubt-mode-$session_id"
 
 # Detect !rv keyword
