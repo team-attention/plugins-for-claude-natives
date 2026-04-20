@@ -12,7 +12,8 @@ interactive-review/
 │   ├── server.py        # MCP server (PEP 723 dependencies)
 │   └── web_ui.py        # HTML/CSS generation
 ├── skills/
-│   └── review.md        # /review skill definition
+│   └── review/
+│       └── SKILL.md     # /review skill definition
 └── .mcp.json            # MCP server configuration
 ```
 
