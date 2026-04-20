@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/say-summary.py",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/.venv/bin/python ${CLAUDE_PLUGIN_ROOT}/scripts/say-summary.py",
             "timeout": 30
           }
         ]
