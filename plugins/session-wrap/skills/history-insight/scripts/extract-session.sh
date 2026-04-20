@@ -71,8 +71,8 @@ jq -c '
   else
     empty
   end
-' "$SESSION_FILE" 2>/dev/null | jq -s '{
-  file: "'"$SESSION_FILE"'",
+' "$SESSION_FILE" 2>/dev/null | jq -s --arg file "$SESSION_FILE" '{
+  file: $file,
   message_count: length,
   messages: .
 }'
