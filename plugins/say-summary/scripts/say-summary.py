@@ -31,8 +31,8 @@ def log(message: str) -> None:
 def get_project_dir() -> Path | None:
     """Find Claude project directory for current working directory."""
     cwd = os.getcwd()
-    # /Users/bong/path/to/project -> -Users-bong-path-to-project
-    project_dir_name = cwd.replace("/", "-")
+    # /Users/bong/.path/to/project -> -Users-bong--path-to-project
+    project_dir_name = cwd.replace("/", "-").replace(".", "-")
     claude_project_dir = Path.home() / ".claude" / "projects" / project_dir_name
 
     if claude_project_dir.is_dir():
