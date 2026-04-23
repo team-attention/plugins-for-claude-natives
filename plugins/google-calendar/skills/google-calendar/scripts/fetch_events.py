@@ -24,7 +24,13 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from calendar_client import CalendarClient, ADCCalendarClient, fetch_all_events, get_all_accounts
+from calendar_client import (
+    CalendarClient,
+    ADCCalendarClient,
+    fetch_all_events,
+    get_all_accounts,
+    config_exists,
+)
 
 
 def format_event_for_display(event: dict, tz: ZoneInfo = None) -> str:
@@ -36,6 +42,7 @@ def format_event_for_display(event: dict, tz: ZoneInfo = None) -> str:
     end = event["end"]
     account = event["account"]
     summary = event["summary"]
+    calendar_alias = event.get("calendar_alias", "")
 
     # 시간 파싱
     if event.get("all_day"):
@@ -48,7 +55,10 @@ def format_event_for_display(event: dict, tz: ZoneInfo = None) -> str:
     # 계정별 아이콘
     icon = "🔵" if account == "work" else "🟢"
 
-    return f"[{time_str}] {icon} {summary} ({account})"
+    # 캘린더 별칭이 있으면 표시
+    cal_info = f" [{calendar_alias}]" if calendar_alias else f" ({account})"
+
+    return f"[{time_str}] {icon} {summary}{cal_info}"
 
 
 def main():
@@ -230,16 +240,37 @@ def main():
                     print(f"    ID: {cal['id']}")
             return
 
-        # 이벤트 조회
-        events = client.get_events(days=args.days)
+        # 이벤트 조회: 설정 파일 있으면 설정 기반, 없으면 primary만
+        has_config = config_exists(args.account, base_path)
+        if has_config:
+            events = client.get_events_from_config(days=args.days)
+        else:
+            events = client.get_events(days=args.days)
 
         if args.json or not args.pretty:
             print(json.dumps(events, ensure_ascii=False, indent=2))
         else:
-            print(f"📅 '{args.account}' 계정 - 향후 {args.days}일간 일정\n")
+            config_status = "(설정 파일 사용)" if has_config else "(primary 캘린더만)"
+            print(f"📅 '{args.account}' 계정 - 향후 {args.days}일간 일정 {config_status}\n")
+
+            # 날짜별 그룹화
+            events_by_date = {}
             for event in events:
-                print(f"  {format_event_for_display(event)}")
-            print(f"\n총 {len(events)}개 일정")
+                start = event["start"]
+                if "T" in start:
+                    date = start.split("T")[0]
+                else:
+                    date = start
+                events_by_date.setdefault(date, []).append(event)
+
+            for date in sorted(events_by_date.keys()):
+                dt = datetime.fromisoformat(date)
+                print(f"### {dt.strftime('%Y-%m-%d (%a)')}")
+                for event in events_by_date[date]:
+                    print(f"  {format_event_for_display(event)}")
+                print()
+
+            print(f"📊 총 {len(events)}개 일정")
 
     except FileNotFoundError as e:
         print(f"❌ {e}", file=sys.stderr)

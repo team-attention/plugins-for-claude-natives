@@ -55,6 +55,35 @@ uv run python .claude/skills/google-calendar/scripts/setup_auth.py --account per
 
 브라우저에서 Google 로그인 → refresh token이 `accounts/{name}.json`에 저장됨
 
+### 3. 캘린더 선택 (계정 등록 시 자동)
+
+계정 등록 시 자동으로 캘린더 선택 화면이 표시됩니다.
+선택한 캘린더 정보가 `accounts/{name}.config.yaml`에 저장됩니다.
+
+### 4. 캘린더 설정 관리
+
+```bash
+# 현재 설정 확인 (Google Calendar와 비교하여 변경사항 표시)
+uv run python scripts/manage_config.py --account personal --list
+
+# Google Calendar와 동기화 (변경 감지 시 interactive 재선택)
+uv run python scripts/manage_config.py --account personal --sync
+
+# 캘린더 활성화/비활성화
+uv run python scripts/manage_config.py --account personal --enable "calendar_id"
+uv run python scripts/manage_config.py --account personal --disable "calendar_id"
+
+# 캘린더 설정 재구성
+uv run python scripts/manage_config.py --account personal --reconfigure
+
+# 캘린더 추가/제거 (ID로 직접 지정)
+uv run python scripts/manage_config.py --account personal --add "calendar_id@group.calendar.google.com"
+uv run python scripts/manage_config.py --account personal --remove "calendar_id"
+
+# 기본 캘린더 설정
+uv run python scripts/manage_config.py --account personal --set-primary "캘린더 이름"
+```
+
 ## 워크플로우
 
 ### 1. 등록된 계정 확인
@@ -138,9 +167,10 @@ uv run python .claude/skills/google-calendar/scripts/fetch_events.py \
 
 | 파일 | 용도 |
 |------|------|
-| `scripts/setup_auth.py` | 계정별 OAuth 인증 및 token 저장 |
+| `scripts/setup_auth.py` | 계정별 OAuth 인증 및 token 저장, 캘린더 선택 |
 | `scripts/fetch_events.py` | 특정 계정의 이벤트 조회 (CLI) |
 | `scripts/manage_events.py` | 이벤트 생성/수정/삭제 (CLI) |
+| `scripts/manage_config.py` | 캘린더 설정 관리 (활성화/비활성화/재구성) |
 | `scripts/calendar_client.py` | Google Calendar API 클라이언트 라이브러리 |
 
 ## 일정 관리 (생성/수정/삭제)
@@ -164,6 +194,19 @@ uv run python .claude/skills/google-calendar/scripts/manage_events.py create \
     --end "2026-01-11" \
     --account personal
 ```
+
+### 특정 캘린더에 일정 생성 (alias 사용)
+
+```bash
+uv run python .claude/skills/google-calendar/scripts/manage_events.py create \
+    --summary "팀 일정" \
+    --start "2026-01-06T14:00:00" \
+    --end "2026-01-06T15:00:00" \
+    --account work \
+    --calendar "팀 캘린더"
+```
+
+> **Note**: `--calendar` 미지정 시 config의 primary 캘린더에 생성됩니다.
 
 ### 일정 수정
 
@@ -195,6 +238,7 @@ uv run python .claude/skills/google-calendar/scripts/manage_events.py delete \
 | `--attendees` | 참석자 이메일 (쉼표 구분) |
 | `--account` | 계정 (work, personal 등) |
 | `--adc` | gcloud ADC 사용 |
+| `--calendar` | 캘린더 ID 또는 alias (기본값: config의 primary 캘린더) |
 | `--timezone` | 타임존 (기본값: Asia/Seoul) |
 | `--json` | JSON 형식 출력 |
 
@@ -212,15 +256,18 @@ uv run python .claude/skills/google-calendar/scripts/manage_events.py delete \
 ├── SKILL.md                    # 이 파일
 ├── scripts/
 │   ├── calendar_client.py      # API 클라이언트
-│   ├── setup_auth.py           # 인증 설정
+│   ├── setup_auth.py           # 인증 설정 + 캘린더 선택
 │   ├── fetch_events.py         # 이벤트 조회 CLI
-│   └── manage_events.py        # 이벤트 생성/수정/삭제 CLI
+│   ├── manage_events.py        # 이벤트 생성/수정/삭제 CLI
+│   └── manage_config.py        # 캘린더 설정 관리 CLI
 ├── references/
 │   ├── setup.md                # 설정 가이드
 │   └── credentials.json        # OAuth Client ID (gitignore)
-└── accounts/                   # 계정별 토큰 (gitignore)
-    ├── work.json
-    └── personal.json
+└── accounts/                   # 계정별 토큰 및 설정 (gitignore)
+    ├── work.json               # OAuth 토큰
+    ├── work.config.yaml        # 캘린더 설정
+    ├── personal.json
+    └── personal.config.yaml
 ```
 
 ## 보안 주의사항
