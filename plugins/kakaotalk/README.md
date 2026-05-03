@@ -36,6 +36,12 @@ uv run python ${CLAUDE_PLUGIN_ROOT}/scripts/kakao_send.py "구봉" "밥 먹었�
 
 # 보내고 창 닫기
 uv run python ${CLAUDE_PLUGIN_ROOT}/scripts/kakao_send.py "구봉" "밥 먹었어?" --close
+
+# 파일 첨부 (사진/문서 등)
+uv run python ${CLAUDE_PLUGIN_ROOT}/scripts/kakao_send.py "구봉" "" --file /path/to/photo.jpg
+
+# 파일 + 텍스트 (파일 먼저, 텍스트는 별도 메시지로 뒤따름)
+uv run python ${CLAUDE_PLUGIN_ROOT}/scripts/kakao_send.py "구봉" "사진 봐봐" --file ~/Downloads/photo.jpg
 ```
 
 ### Read Messages
@@ -60,6 +66,7 @@ uv run python ${CLAUDE_PLUGIN_ROOT}/scripts/kakao_read.py --search "검색어"
 | `--close`, `-c` | 발송 후 채팅창 닫기 |
 | `--no-signature` | "sent with claude code" 서명 없이 보내기 |
 | `--json`, `-j` | JSON 형식 출력 |
+| `--file PATH`, `-f PATH` | 파일 첨부. 텍스트와 함께 주면 파일이 먼저, 텍스트는 별도 메시지로 뒤따름. 파일만 보낼 땐 서명 자동 생략. |
 
 ### kakao_read.py
 
