@@ -39,6 +39,53 @@ TIME_PATTERNS = ['오전', '오후', '어제', '그제', '월', '일',
 MAIN_WINDOW_TITLES = ('카카오톡', 'KakaoTalk')
 
 
+class AmbiguousChatError(Exception):
+    """채팅방 매칭이 모호할 때 (정확일치 ≥2 또는 정확일치 0 + 부분일치 ≥1)."""
+    pass
+
+
+def classify_matches(chat_name, candidates):
+    """후보 제목 리스트를 분류해 (chosen, error) 반환.
+
+    정책: 정확일치 1 개만 자동 선택. 그 외 (정확 ≥2, 또는 정확 0 + 부분일치 ≥1) 는
+    AmbiguousChatError 후보로 보고 사용자에게 정확한 이름을 다시 받음. 부분일치는
+    자동으로 안 씀.
+
+    Returns:
+        (chosen, error):
+          - 정확일치 1 → (title, None)
+          - 정확일치 ≥2 → (None, error_msg)
+          - 정확일치 0 + 부분일치 ≥1 → (None, error_msg)
+          - 매칭 0 → (None, None)
+    """
+    needle = (chat_name or "").strip().lower()
+    exact = []
+    partial = []
+    seen = set()
+    for c in candidates:
+        if not c or c in seen:
+            continue
+        seen.add(c)
+        norm = c.strip().lower()
+        if norm == needle:
+            exact.append(c)
+        elif needle and needle in norm:
+            partial.append(c)
+
+    if len(exact) == 1:
+        return exact[0], None
+
+    if len(exact) >= 2:
+        bullets = "\n".join(f"  • {t}" for t in exact)
+        return None, f"여러 채팅방이 정확히 일치합니다. 더 구체적인 이름으로 지정:\n{bullets}"
+
+    if partial:
+        bullets = "\n".join(f"  • {t}" for t in partial)
+        return None, f"정확일치 없음. 부분일치 {len(partial)}개 발견 — 정확한 이름으로 다시 지정:\n{bullets}"
+
+    return None, None
+
+
 # ============================================================================
 # AppleScript & Keyboard Helpers
 # ============================================================================
@@ -81,12 +128,24 @@ def find_main_window(kakao_app):
 
 
 def find_open_chat(kakao_app, chat_name: str):
-    """이미 열린 채팅방 창에서 이름이 일치하는 것 찾기."""
+    """이미 열린 채팅방 창에서 정확일치하는 것 찾기.
+
+    매칭 정책 (classify_matches): 정확일치 1 개만 자동 선택. 정확일치 ≥2 또는
+    정확 0 + 부분일치 ≥1 면 AmbiguousChatError. 0 매칭이면 None.
+    """
+    title_to_win = {}
     for win in kakao_app.windows():
-        title = win.AXTitle
-        if title != "카카오톡" and chat_name.lower() in title.lower():
-            return win
-    return None
+        title = getattr(win, 'AXTitle', None)
+        if title is None or title in MAIN_WINDOW_TITLES:
+            continue
+        title_to_win.setdefault(title, win)
+
+    chosen, error = classify_matches(chat_name, list(title_to_win.keys()))
+    if error:
+        raise AmbiguousChatError(error)
+    if chosen is None:
+        return None
+    return title_to_win[chosen]
 
 
 def get_all_chat_windows(kakao_app) -> list:
@@ -127,22 +186,75 @@ def clear_search_and_go_main():
 
 
 def search_and_open_chat(chat_name: str):
-    """검색으로 채팅방 열기."""
+    """검색으로 채팅방 열기. 정확일치 row 만 자동 클릭, 모호하면 AmbiguousChatError."""
     clear_search_and_go_main()
 
     key_code(3, "command down")  # Cmd+F
     time.sleep(0.5)
+    # 검색 필드 비우기 (잔여 검색어 누적 방지)
     key_code(0, "command down")  # Cmd+A
-    time.sleep(0.1)
+    time.sleep(0.05)
+    key_code(51)  # Delete (Backspace)
+    time.sleep(0.05)
 
     subprocess.run(["pbcopy"], input=chat_name.encode(), check=True)
     key_code(9, "command down")  # Cmd+V
     time.sleep(0.8)
 
-    key_code(125)  # Down arrow
-    time.sleep(0.2)
+    # 결과 row 들의 채팅방 제목 + AXRow 절대 인덱스를 읽어서 분류.
+    kakao = get_kakao_app()
+    pairs = _read_search_chat_rows(kakao)
+    titles = [t for _, t in pairs]
+    chosen, error = classify_matches(chat_name, titles)
+    if error:
+        key_code(53)  # ESC — 검색창 닫고 에러
+        time.sleep(0.2)
+        raise AmbiguousChatError(error)
+    if chosen is None:
+        # 0 매칭 — 검색창 닫고 종료. 호출측이 None 으로 처리.
+        key_code(53)
+        time.sleep(0.2)
+        return
+
+    # 정확일치 row 의 절대 인덱스만큼 Down 후 Enter.
+    chosen_idx = next((idx for idx, t in pairs if t == chosen), 0)
+    for _ in range(chosen_idx + 1):
+        key_code(125)  # Down
+        time.sleep(0.05)
+    time.sleep(0.15)
     key_code(36)  # Enter
     time.sleep(0.8)
+
+
+def _read_search_chat_rows(kakao_app, limit: int = 50):
+    """카톡 Cmd+F 결과 테이블에서 채팅방 row 만 (axrow_index, title) 페어로 반환.
+
+    axrow_index 는 AXTable 안의 AXRole='AXRow' 들 중 0 부터 시작하는 인덱스로,
+    Down 키로 이동할 때의 절대 위치와 1:1 일치한다.
+    """
+    pairs = []
+    for win in kakao_app.windows():
+        if safe_get_attr(win, 'AXTitle') not in MAIN_WINDOW_TITLES:
+            continue
+        for child in safe_get_attr(win, 'AXChildren', []) or []:
+            if safe_get_attr(child, 'AXRole') != 'AXScrollArea':
+                continue
+            for tabchild in safe_get_attr(child, 'AXChildren', []) or []:
+                if safe_get_attr(tabchild, 'AXRole') != 'AXTable':
+                    continue
+                rows = safe_get_attr(tabchild, 'AXChildren', []) or []
+                axrow_idx = 0
+                for row in rows[:limit]:
+                    if safe_get_attr(row, 'AXRole') != 'AXRow':
+                        continue
+                    texts = _extract_row_texts(row)
+                    if len(texts) >= 2 and any(t in texts[1] for t in TIME_PATTERNS):
+                        pairs.append((axrow_idx, texts[0]))
+                    axrow_idx += 1
+                break
+            break
+        break
+    return pairs
 
 
 def close_chat():
@@ -398,8 +510,11 @@ def search_chats(query: str, limit: int = 20) -> list[str]:
 
     key_code(3, "command down")  # Cmd+F
     time.sleep(0.5)
+    # 잔여 검색어가 있으면 paste 가 append 되어 매칭이 깨지므로 명시적으로 비움.
     key_code(0, "command down")  # Cmd+A
-    time.sleep(0.1)
+    time.sleep(0.05)
+    key_code(51)  # Delete (Backspace)
+    time.sleep(0.05)
     subprocess.run(["pbcopy"], input=query.encode(), check=True)
     key_code(9, "command down")  # Cmd+V
     time.sleep(1.0)
@@ -487,7 +602,7 @@ def read_chat(chat_name: str, limit: int = 100) -> tuple[str | None, list[dict]]
 
 def main():
     parser = argparse.ArgumentParser(description='KakaoTalk 채팅방 읽기 CLI')
-    parser.add_argument('chat_name', nargs='?', help='채팅방 이름 (부분 일치)')
+    parser.add_argument('chat_name', nargs='?', help='채팅방 이름 (정확일치 우선, 부분일치만 있으면 후보 출력 후 에러)')
     parser.add_argument('--limit', '-l', type=int, default=100, help='최대 메시지 수 (기본: 100)')
     parser.add_argument('--list', action='store_true', help='채팅방 목록 보기')
     parser.add_argument('--search', '-s', type=str, help='카카오톡 검색창에서 검색 후 결과 목록')
@@ -526,7 +641,11 @@ def main():
         parser.print_help()
         return
 
-    chat_name, messages = read_chat(args.chat_name, args.limit)
+    try:
+        chat_name, messages = read_chat(args.chat_name, args.limit)
+    except AmbiguousChatError as e:
+        print(f"✗ 채팅방 매칭 모호 — 안전을 위해 중단합니다.\n{e}", file=sys.stderr)
+        sys.exit(1)
 
     if not messages:
         if args.json:
