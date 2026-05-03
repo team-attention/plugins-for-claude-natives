@@ -398,8 +398,11 @@ def search_chats(query: str, limit: int = 20) -> list[str]:
 
     key_code(3, "command down")  # Cmd+F
     time.sleep(0.5)
+    # 잔여 검색어가 있으면 paste 가 append 되어 매칭이 깨지므로 명시적으로 비움.
     key_code(0, "command down")  # Cmd+A
-    time.sleep(0.1)
+    time.sleep(0.05)
+    key_code(51)  # Delete (Backspace)
+    time.sleep(0.05)
     subprocess.run(["pbcopy"], input=query.encode(), check=True)
     key_code(9, "command down")  # Cmd+V
     time.sleep(1.0)

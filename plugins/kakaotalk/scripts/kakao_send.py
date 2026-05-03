@@ -122,6 +122,14 @@ def search_and_open_chat(chat_name: str):
     key_code(3, "command down")  # Cmd+F (검색)
     time.sleep(0.5)
 
+    # 검색 필드에 잔여 텍스트가 있을 수 있으므로 비우고 시작.
+    # 이전 호출의 검색어가 그대로 남아있으면 paste 가 끝에 append 되어
+    # 예) "학" + "학" → "학학" 이 되며 매칭 0 건이 됨.
+    key_code(0, "command down")  # Cmd+A
+    time.sleep(0.05)
+    key_code(51)  # Delete (Backspace)
+    time.sleep(0.05)
+
     subprocess.run(["pbcopy"], input=chat_name.encode(), check=True)
     key_code(9, "command down")  # Cmd+V
     time.sleep(0.8)
