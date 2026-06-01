@@ -82,6 +82,9 @@ try {
     claude: commandExists('claude'),
     codex: commandExists('codex'),
     gemini: commandExists('gemini'),
+    // Antigravity CLI (`agy`): successor to the Gemini CLI. The worker falls back to
+    // it automatically for the `gemini` member when the Gemini CLI is gone.
+    agy: commandExists('agy'),
   };
 
   const hasClaudeDir = fs.existsSync(claudeDir);
@@ -229,7 +232,7 @@ try {
   }
   console.log();
   console.log(`${YELLOW}Note: Only detected CLIs are enabled as members in the generated config.${NC}`);
-  console.log(`${YELLOW}      Detected: claude=${detected.claude} codex=${detected.codex} gemini=${detected.gemini}${NC}`);
+  console.log(`${YELLOW}      Detected: claude=${detected.claude} codex=${detected.codex} gemini=${detected.gemini} agy=${detected.agy}${NC}`);
 
 } catch (error) {
   console.error(`${RED}Error during installation: ${error.message}${NC}`);

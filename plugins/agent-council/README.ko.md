@@ -85,6 +85,11 @@ npx github:team-attention/agent-council --target both
 
 # Google Gemini CLI
 # https://github.com/google-gemini/gemini-cli
+#
+# 참고: Gemini CLI는 무료/Pro/Ultra 사용자 대상 2026-06-18 종료되며 후속작 Antigravity
+# CLI(`agy`)로 전환됩니다. `gemini`가 없고 `agy`가 설치돼 있으면 `gemini` 멤버는 자동으로
+# `agy --dangerously-skip-permissions -p`로 실행됩니다.
+# agy 설치: curl -fsSL https://antigravity.google/cli/install.sh | bash
 ```
 
 설치 확인(멤버별):
