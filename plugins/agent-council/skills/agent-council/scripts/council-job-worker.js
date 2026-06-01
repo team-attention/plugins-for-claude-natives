@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { spawn } = require('child_process');
+const { spawn, execFileSync } = require('child_process');
 
 function exitWithError(message) {
   process.stderr.write(`${message}\n`);
@@ -85,6 +85,33 @@ function atomicWriteJson(filePath, payload) {
   fs.renameSync(tmpPath, filePath);
 }
 
+function commandExists(name) {
+  // No shell: pass the name as an argv element to which/where (injection-safe).
+  const whichCmd = process.platform === 'win32' ? 'where' : 'which';
+  try {
+    execFileSync(whichCmd, [name], { stdio: 'ignore', timeout: 5000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Gemini CLI -> Antigravity CLI (`agy`) transparent migration.
+// Google is sunsetting the Gemini CLI for free/Pro/Ultra users on 2026-06-18 and
+// moving to its successor, the Antigravity CLI (binary: `agy`). When a member uses
+// the `gemini` command but `gemini` is no longer on PATH and `agy` is installed,
+// transparently run the standard agy headless call instead. Environments where the
+// Gemini CLI still exists (e.g. enterprise) are left untouched -- non-breaking.
+function resolveGeminiSuccessor(program, args) {
+  if (program !== 'gemini') return { program, args };
+  if (commandExists('gemini')) return { program, args };
+  if (commandExists('agy')) {
+    // agy ignores gemini-specific flags; use its documented one-shot headless form.
+    return { program: 'agy', args: ['--dangerously-skip-permissions', '-p'] };
+  }
+  return { program, args };
+}
+
 function main() {
   const options = parseArgs(process.argv);
   const jobDir = options['job-dir'];
@@ -119,8 +146,7 @@ function main() {
     process.exit(1);
   }
 
-  const program = tokens[0];
-  const args = tokens.slice(1);
+  const { program, args } = resolveGeminiSuccessor(tokens[0], tokens.slice(1));
 
   atomicWriteJson(statusPath, {
     member,

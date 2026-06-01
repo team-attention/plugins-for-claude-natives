@@ -85,6 +85,11 @@ Install the CLIs listed under `council.members` in your `council.config.yaml` (t
 
 # Google Gemini CLI
 # https://github.com/google-gemini/gemini-cli
+#
+# Note: the Gemini CLI is being retired for free/Pro/Ultra users (2026-06-18) in favor
+# of the Antigravity CLI (`agy`). If `gemini` is missing but `agy` is installed, the
+# `gemini` member transparently runs `agy --dangerously-skip-permissions -p` instead.
+# Install agy: curl -fsSL https://antigravity.google/cli/install.sh | bash
 ```
 
 Verify each member CLI:

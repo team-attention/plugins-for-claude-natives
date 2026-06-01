@@ -22,6 +22,10 @@ council:
       command: "gemini"
       emoji: "💎"
       color: "GREEN"
+      # Note: the Gemini CLI is being retired for free/Pro/Ultra users (2026-06-18).
+      # If `gemini` is not on PATH but the successor Antigravity CLI (`agy`) is, the
+      # worker auto-runs `agy --dangerously-skip-permissions -p` instead. To pin it
+      # explicitly, set: command: "agy --dangerously-skip-permissions -p"
 
   # Chairman configuration (Claude will act as chairman)
   chairman:
