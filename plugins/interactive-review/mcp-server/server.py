@@ -279,8 +279,10 @@ def setup_signal_handlers():
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, handle_shutdown)
-    signal.signal(signal.SIGHUP, handle_shutdown)
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    if hasattr(signal, "SIGHUP"):
+        signal.signal(signal.SIGHUP, handle_shutdown)
+    if hasattr(signal, "SIGPIPE"):
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
 async def main():
