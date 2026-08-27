@@ -35,12 +35,25 @@ Comprehensive session wrap-up workflow with multi-agent analysis.
 └─────────────────────────────────────────────────────┘
 ```
 
-## Step 1: Check Git Status
+## Step 1: Check Git Status (only if this is a git repo)
+
+Not every working directory is a git repository — knowledge vaults, note
+directories, and config trees often are not. Probe first, and skip this step
+entirely when the probe fails.
 
 ```bash
-git status --short
-git diff --stat HEAD~3 2>/dev/null || git diff --stat
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git status --short
+  git diff --stat HEAD~3 2>/dev/null || git diff --stat
+else
+  echo "not a git repo — skipping git status; no commit is possible this session"
+fi
 ```
+
+If the probe reports "not a git repo", carry that fact into Step 5: the commit
+option must not be offered. Also note that the session's real changes may live
+outside the filesystem entirely (remote PRs, tickets, messages). Say so in the
+integrated report rather than reporting "no changes".
 
 ## Step 2: Phase 1 - Analysis Agents (Parallel)
 
@@ -139,6 +152,13 @@ Check if proposals duplicate existing docs/automation:
 
 ## Step 5: Action Selection
 
+Build the option list from what Step 1 actually found. **Include the commit
+option only when Step 1 confirmed a git repo with changes to commit** — offering
+it in a non-git directory presents an impossible action as the top
+recommendation.
+
+Git repo with uncommitted changes:
+
 ```
 AskUserQuestion(
     questions=[{
@@ -148,6 +168,24 @@ AskUserQuestion(
         "options": [
             {"label": "Create commit (Recommended)", "description": "Commit changes"},
             {"label": "Update CLAUDE.md", "description": "Document new knowledge/workflows"},
+            {"label": "Create automation", "description": "Generate skill/command/agent"},
+            {"label": "Skip", "description": "End without action"}
+        ]
+    }]
+)
+```
+
+Not a git repo, or nothing to commit — drop the commit option and lead with the
+documentation action:
+
+```
+AskUserQuestion(
+    questions=[{
+        "question": "Which actions would you like to perform?",
+        "header": "Wrap Options",
+        "multiSelect": true,
+        "options": [
+            {"label": "Update CLAUDE.md (Recommended)", "description": "Document new knowledge/workflows"},
             {"label": "Create automation", "description": "Generate skill/command/agent"},
             {"label": "Skip", "description": "End without action"}
         ]
