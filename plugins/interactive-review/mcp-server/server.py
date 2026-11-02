@@ -276,7 +276,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 def setup_signal_handlers():
     """Set up signal handlers for graceful shutdown."""
     def handle_shutdown(signum, frame):
-        sys.exit(0)
+        # os._exit skips interpreter finalization: the stdio reader thread may
+        # hold the stdin buffer lock, and closing it during finalization aborts
+        # (Fatal Python error: _enter_buffered_busy) with a macOS crash dialog.
+        os._exit(0)
 
     signal.signal(signal.SIGTERM, handle_shutdown)
     signal.signal(signal.SIGHUP, handle_shutdown)
@@ -300,7 +303,7 @@ async def main():
     except KeyboardInterrupt:
         pass
     finally:
-        sys.exit(0)
+        os._exit(0)
 
 
 if __name__ == "__main__":
