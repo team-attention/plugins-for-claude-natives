@@ -279,9 +279,11 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
 def setup_signal_handlers():
     """Set up signal handlers for graceful shutdown."""
     def handle_shutdown(signum, frame):
-        # os._exit skips interpreter finalization: the stdio reader thread may
-        # hold the stdin buffer lock, and closing it during finalization aborts
-        # (Fatal Python error: _enter_buffered_busy) with a macOS crash dialog.
+        # os._exit skips interpreter finalization. With sys.exit, finalization
+        # waits forever on an idle non-daemon worker thread (the process lingers
+        # after its session ends), and a second signal then aborts while the
+        # stdio reader thread holds the stdin buffer lock
+        # (Fatal Python error: _enter_buffered_busy, a macOS crash dialog).
         # It also skips start_review_impl's finally, so remove its temp dir here.
         if _active_review_dir is not None:
             shutil.rmtree(_active_review_dir, ignore_errors=True)
