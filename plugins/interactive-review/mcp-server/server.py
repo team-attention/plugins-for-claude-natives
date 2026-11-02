@@ -17,6 +17,7 @@ Provides the start_review tool that:
 import asyncio
 import json
 import os
+import shutil
 import signal
 import socket
 import sys
@@ -39,6 +40,7 @@ from web_ui import parse_markdown, generate_html
 # Global state for the HTTP server
 _review_result: dict | None = None
 _result_event = threading.Event()
+_active_review_dir: Path | None = None
 
 
 def find_free_port() -> int:
@@ -113,7 +115,7 @@ async def start_review_impl(content: str, title: str = "Review") -> dict[str, An
     Returns:
         Review results with status, items, and summary
     """
-    global _review_result, _result_event
+    global _review_result, _result_event, _active_review_dir
 
     # Reset state
     _review_result = None
@@ -123,6 +125,7 @@ async def start_review_impl(content: str, title: str = "Review") -> dict[str, An
     review_id = str(uuid.uuid4())[:8]
     review_dir = Path(tempfile.gettempdir()) / f"claude-review-{review_id}"
     review_dir.mkdir(parents=True, exist_ok=True)
+    _active_review_dir = review_dir
 
     server = None
     try:
@@ -210,10 +213,10 @@ async def start_review_impl(content: str, title: str = "Review") -> dict[str, An
 
         # Cleanup temp directory
         try:
-            import shutil
             shutil.rmtree(review_dir, ignore_errors=True)
         except Exception:
             pass
+        _active_review_dir = None
 
 
 # Create MCP server
@@ -279,6 +282,9 @@ def setup_signal_handlers():
         # os._exit skips interpreter finalization: the stdio reader thread may
         # hold the stdin buffer lock, and closing it during finalization aborts
         # (Fatal Python error: _enter_buffered_busy) with a macOS crash dialog.
+        # It also skips start_review_impl's finally, so remove its temp dir here.
+        if _active_review_dir is not None:
+            shutil.rmtree(_active_review_dir, ignore_errors=True)
         os._exit(0)
 
     signal.signal(signal.SIGTERM, handle_shutdown)
