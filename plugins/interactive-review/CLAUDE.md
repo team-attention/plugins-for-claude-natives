@@ -24,7 +24,7 @@ interactive-review/
 
 ```python
 # /// script
-# dependencies = ["mcp>=1.0.0"]
+# dependencies = ["mcp>=1.0.0,<2"]
 # ///
 ```
 
